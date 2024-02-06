@@ -93,15 +93,18 @@ import statsmodels.api as sm # for more advanced statistical testing
 import matplotlib.pyplot as plt # popular plotting library
 import seaborn as sns # wrapper for matplotlib to make plotting much easier
 from sklearn import linear_model # scikit-learn is a very useful machine learning library with many models built in
-import torch # pytorch and tensorflow are both very powerful deep learning libraries for more advanced machine learning models
-import tensorflow as tf
+#import torch # pytorch and tensorflow are both very powerful deep learning libraries for more advanced machine learning models
+#import tensorflow as tf # they currently do not work with the latest Python version however
 
 #%% read in data and create a pandas dataframe
 # don't forget escape character "\" in file paths
 
+username = os.getlogin() # get your active username
+share_path = fr"C:\Users\{username}\\" # insert your username in the file path
+
 path = os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
-file = r"RED_data_rf.csv"
-filepath = os.path.join(path, file)
+file = r"RED_data_rf.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath = os.path.join(path, file) # add the file to the folder path
 df = pd.read_csv(filepath) # read the file at the speicifed filepath into a pandas dataframe
 
 #%% open, examine, and select data
