@@ -136,11 +136,12 @@ for column in all_columns:
     
     bar_plotter(f"{column}", save_path) # call plotting function on each column
 
+
 #%% plot normalized data
 
 
 
 #%% stats
 
-#df_rent.groupby(by = "hometype").mean()
+
 
