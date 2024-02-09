@@ -1,0 +1,3 @@
+[submodule "RED"]
+	path = RED
+	url = https://github.com/pnnl/NEI
