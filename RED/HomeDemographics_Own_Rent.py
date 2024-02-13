@@ -40,6 +40,8 @@ own_column_categories = {df_own_columns[i]:
                          for i in range(len(df_own_columns))
                          }
 
+all_columns = sorted(list(set(list(df_rent_columns) + list(df_own_columns)))) # create list of all columns together for later
+    
 #%% create df for categories in df_rent and count occurences
 
 hometype = sorted(rent_column_categories.get("hometype"))
@@ -117,31 +119,73 @@ def bar_plotter(column, path=None):
     plt.title(f"Column: {column}")
     plt.legend()
     
-    if path:
+    if path != None:
         fig.tight_layout()
         plt.savefig(os.path.join(save_path, f"{column}_own_rent_plot.jpeg"))
     
-    #plt.show() # uncomment to print plots to console
-    #plt.clf()
+    return None
+
+#%% function to plot pie graphs comparing owner vs. renter
+
+# compare own vs. rent side by side
+def pie_plotter(column, path=None):
+    
+    rent_categories = rent_data_dict[f"{column}"].keys()
+    rent_values = rent_data_dict[f"{column}"].values()
+    
+    own_categories = own_data_dict[f"{column}"].keys()
+    own_values = own_data_dict[f"{column}"].values()
+    
+    plt.rc("font", size = 7)
+    plt.rc("axes", titlesize=9)
+    
+    fig, ax = plt.subplots(1, 2, 
+                           #constrained_layout=True
+                           )
+    
+    ax[0].pie(rent_values, labels = rent_categories, autopct = "%1.0f%%", labeldistance = None, pctdistance = 1.15)
+    ax[0].set_title("Rent")
+    
+    ax[1].pie(own_values, labels = own_categories, autopct = "%1.0f%%", labeldistance = None, pctdistance = 1.15)
+    ax[1].set_title("Own")
+    
+    handles, labels = ax[0].get_legend_handles_labels()
+    handles += ax[1].get_legend_handles_labels()[0]
+    labels_1 = ax[1].get_legend_handles_labels()[1]
+    for label in labels_1:
+        if label not in labels:
+            labels += label
+
+    fig.suptitle(f"Column: {column}", fontsize = 10)
+    fig.legend(loc = "lower center", labels = labels)
+    
+    if path != None:
+        #fig.tight_layout()
+        plt.savefig(os.path.join(save_path, f"{column}_own_rent_pie.jpeg"))
+    
+    return None
 
 #%% create plots for each column and export
 
-all_columns = sorted(list(set(list(df_rent_columns) + list(df_own_columns))))
-
 # save as image to folder in cwd
-save_folder = r"home_demographics_30jan2024_plots\own_rent_counts"
+save_folder = r"home_demographics_30jan2024_plots\own_rent_pie"
 save_path = os.path.join(path, save_folder)
 
 for column in all_columns:
     
-    bar_plotter(f"{column}", save_path) # call plotting function on each column
-
-
-#%% plot normalized data
-
-
+    # call plotting functions on each column
+    bar_plotter(f"{column}", save_path) 
+    pie_plotter(f"{column}", save_path)
 
 #%% stats
 
+# split data into ordinal and nominal groups
+idx_ord = [5,9,10,11,13,14,23,26]
+idx_nom = [i for i in range(len(all_columns)) if i not in idx_ord]
 
+ordinal_categories = [all_columns[idx] for idx in idx_ord]
+nominal_categories = [all_columns[idx] for idx in idx_nom]
+
+
+#%%
 
