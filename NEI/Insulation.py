@@ -33,6 +33,47 @@ file = r"baseline_metadata_and_annual_results.csv" # if you set your current fol
 filepath = os.path.join(path, file) # add the file to the folder path
 df = pd.read_csv(filepath) # read the file at the speicifed filepath into a pandas dataframe
 
+file1 = r"upgrade01_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath1 = os.path.join(path, file) # add the file to the folder path
+df1 = pd.read_csv(filepath) 
+
+file2 = r"upgrade02_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath2 = os.path.join(path, file) # add the file to the folder path
+df2 = pd.read_csv(filepath) 
+
+file3 = r"upgrade03_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath3 = os.path.join(path, file) # add the file to the folder path
+df3 = pd.read_csv(filepath) 
+
+file4 = r"upgrade04_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath4 = os.path.join(path, file) # add the file to the folder path
+df4 = pd.read_csv(filepath) 
+
+file5 = r"upgrade05_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath5 = os.path.join(path, file) # add the file to the folder path
+df5 = pd.read_csv(filepath) 
+
+file6 = r"upgrade06_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath6 = os.path.join(path, file) # add the file to the folder path
+df6 = pd.read_csv(filepath) 
+
+file7 = r"upgrade07_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath7 = os.path.join(path, file) # add the file to the folder path
+df7 = pd.read_csv(filepath) 
+
+file8 = r"upgrade08_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath8 = os.path.join(path, file) # add the file to the folder path
+df8 = pd.read_csv(filepath) 
+
+file9 = r"upgrade09_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath9 = os.path.join(path, file) # add the file to the folder path
+df9 = pd.read_csv(filepath) 
+
+file10 = r"upgrade10_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+filepath10 = os.path.join(path, file) # add the file to the folder path
+df10 = pd.read_csv(filepath) 
+
+
 #%% open, examine, and select data
 
 df_stats = df.describe() # descriptive statistics on each column
@@ -40,14 +81,14 @@ df_stats = df.describe() # descriptive statistics on each column
 # find and remove NaNs
 nans = df.isnull().sum() # check how many nans are in each column
 df_no_nans = df.dropna() # removes all nans, or can set thresh to limit how many nans are needed to drop that row or column
-df_nans_filled = df.fillna(0).astype("int") # replace all nans with a value (useful for plotting, sometimes nans break matplotlib)
+#df_nans_filled = df.fillna(0).astype("int") # replace all nans with a value (useful for plotting, sometimes nans break matplotlib)
 
-df_sel_col_name = df[["homesize", "yearsinhome", "heatpumpHVAC"]] # select columns by name
-df_sliced_name = df.loc[:, "yearbuilt" : "yearsinhome"] # slice by the name of the columns, ":" by itself means "all" rows or columns
-df_sliced_idx = df.iloc[0:100, 2:5] # slice the dataframe by index [rows, columns]
-df_sliced_conditional = df.loc[(df.loc[:, "heatpumpwh"] == 1)] # select rows if a column is equal to a certain value
+#df_sel_col_name = df[["homesize", "yearsinhome", "heatpumpHVAC"]] # select columns by name
+#df_sliced_name = df.loc[:, "yearbuilt" : "yearsinhome"] # slice by the name of the columns, ":" by itself means "all" rows or columns
+#df_sliced_idx = df.iloc[0:100, 2:5] # slice the dataframe by index [rows, columns]
+#df_sliced_conditional = df.loc[(df.loc[:, "heatpumpwh"] == 1)] # select rows if a column is equal to a certain value
 
-df_heatpumpwh_transposed = df_sliced_conditional.T # transpose a dataframe so rows are now columns
+#df_heatpumpwh_transposed = df_sliced_conditional.T # transpose a dataframe so rows are now columns
 
 #%% basic Pythonic operations
 
