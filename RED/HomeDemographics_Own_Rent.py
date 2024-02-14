@@ -3,6 +3,7 @@ import os
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt
+import statistics as st
 
 #%% open data csv into dataframe, change default encoding
 
@@ -41,16 +42,6 @@ own_column_categories = {df_own_columns[i]:
                          }
 
 all_columns = sorted(list(set(list(df_rent_columns) + list(df_own_columns)))) # create list of all columns together for later
-    
-#%% create df for categories in df_rent and count occurences
-
-hometype = sorted(rent_column_categories.get("hometype"))
-hometype_df = df_rent.loc[(df_rent.loc[:, "hometype"] == "Single family detached home")]
-hometype_counts = {type: len(df_rent.loc[(df_rent.loc[:, "hometype"] == type)]) for type in hometype}
-
-age18_64 = sorted(rent_column_categories.get("age18_64"))
-age18_64_df = df_rent.loc[(df_rent.loc[:, "age18_64"] == 2)]
-age18_64_counts = {type: len(df_rent.loc[(df_rent.loc[:, "age18_64"] == type)]) for type in age18_64}
 
 #%% create dict for each column and categories in df and count occurences
 
@@ -68,11 +59,147 @@ for column_name in df_own_columns:
     categories = own_column_categories.get(f"{column_name}")
     category_counts = {str(category): len(df_own.loc[(df_own.loc[:, f"{column_name}"] == category)]) for category in categories}
     own_data_dict[f"{column_name}"] = category_counts
-    
+  
+#%% manually reorder ordinal categories that were sorted by string
+
+# rent
+rent_data_dict["energyexpenses"] = {
+    "Up to $25": 57,
+    "$26-$50": 143,
+    "$51-$100": 422,
+    "$101-$150": 600,
+    "$151-$200": 550,
+    "$201-$250": 379,
+    "$251-$300": 290,
+    "Greater than $300": 315    
+    }
+
+rent_data_dict["hhincome"] = {
+    "0": 54,
+    "1-15,000": 456,
+    "15,001-30,000": 762,
+    "30,001-45,000": 534,
+    "45,001-60,000": 405,
+    "60,001-75,000": 203,
+    "75,001-100,000": 190,
+    "100,001-125,000": 76,
+    "125,001-150,000": 55,
+    "150,001-175,000": 65,
+    "175,001 or more": 40,
+    }
+
+rent_data_dict["homesqft"] = {
+    "500 square feet or smaller": 110,
+    "501-1,000 square feet": 542,
+    "1,001-1,500 square feet": 688,
+    "1,501-2,000 square feet": 567,
+    "2,001-2,500 square feet": 346,
+    "2,501-3,000 square feet": 163,
+    "3,000 square feet or larger": 64,
+    }
+
+rent_data_dict["homeyrs"] = {
+    "Less than 1 year": 402,
+    "1-3 years": 1000,
+    "3-5 years": 666,
+    "5-10 years": 520,
+    "10 years or longer": 306, 
+    }
+
+rent_data_dict["mortgagerentbins"] = {
+    "$0-700": 1069,
+    "$701-1,500": 1285,
+    "$1,501-2,000": 238,
+    "$2,001-3,000": 156,
+    "$3,001-4,000": 36,
+    "$4,001-5,000": 26,
+    "$5,001-6,000": 22,
+    "$6,001-7,500": 17,
+    "$7,501-10,000": 7,
+    "Over $10,000": 5
+    }
+
+rent_data_dict["yrbuilt"] = {
+    "before 1900": 49,
+    "1901-1930": 148,
+    "1930-1959": 357,
+    "1960-1979": 598,
+    "1980-1990": 475,
+    "1991-2010": 447,
+    "after 2010": 221    
+    }
+
+# own
+own_data_dict["energyexpenses"] = {
+    "Up to $25": 57,
+    "$26-$50": 143,
+    "$51-$100": 422,
+    "$101-$150": 600,
+    "$151-$200": 550,
+    "$201-$250": 379,
+    "$251-$300": 290,
+    "Greater than $300": 315    
+    }
+
+own_data_dict["hhincome"] = {
+    "0": 54,
+    "1-15,000": 456,
+    "15,001-30,000": 762,
+    "30,001-45,000": 534,
+    "45,001-60,000": 405,
+    "60,001-75,000": 203,
+    "75,001-100,000": 190,
+    "100,001-125,000": 76,
+    "125,001-150,000": 55,
+    "150,001-175,000": 65,
+    "175,001 or more": 40,
+    }
+
+own_data_dict["homesqft"] = {
+    "500 square feet or smaller": 110,
+    "501-1,000 square feet": 542,
+    "1,001-1,500 square feet": 688,
+    "1,501-2,000 square feet": 567,
+    "2,001-2,500 square feet": 346,
+    "2,501-3,000 square feet": 163,
+    "3,000 square feet or larger": 64,
+    }
+
+own_data_dict["homeyrs"] = {
+    "Less than 1 year": 402,
+    "1-3 years": 1000,
+    "3-5 years": 666,
+    "5-10 years": 520,
+    "10 years or longer": 306, 
+    }
+
+own_data_dict["mortgageownbins"] = {
+    "$0-700": 1069,
+    "$701-1,500": 1285,
+    "$1,501-2,000": 238,
+    "$2,001-3,000": 156,
+    "$3,001-4,000": 36,
+    "$4,001-5,000": 26,
+    "$5,001-6,000": 22,
+    "$6,001-7,500": 17,
+    "$7,501-10,000": 7,
+    "Over $10,000": 5
+    }
+
+own_data_dict["yrbuilt"] = {
+    "before 1900": 49,
+    "1901-1930": 148,
+    "1930-1959": 357,
+    "1960-1979": 598,
+    "1980-1990": 475,
+    "1991-2010": 447,
+    "after 2010": 221    
+    }
+
 #%% function to plot renter vs. owner
 
 # compare renter vs. buyer in same chart
-def bar_plotter(column, path=None):
+def bar_plotter(column, save_path=None):
     
     rent_category = list(rent_data_dict[f"{column}"].keys())
     rent_values = list(rent_data_dict[f"{column}"].values())
@@ -128,7 +255,7 @@ def bar_plotter(column, path=None):
 #%% function to plot pie graphs comparing owner vs. renter
 
 # compare own vs. rent side by side
-def pie_plotter(column, path=None):
+def pie_plotter(column, save_path=None):
     
     rent_categories = rent_data_dict[f"{column}"].keys()
     rent_values = rent_data_dict[f"{column}"].values()
@@ -168,14 +295,17 @@ def pie_plotter(column, path=None):
 #%% create plots for each column and export
 
 # save as image to folder in cwd
-save_folder = r"home_demographics_30jan2024_plots\own_rent_pie"
-save_path = os.path.join(path, save_folder)
+save_dir = r"home_demographics_30jan2024_plots"
+save_folder_counts = r"\own_rent_counts"
+save_folder_pie = r"\own_rent_pie"
+save_path_counts = os.path.join(path, save_dir + save_folder_counts)
+save_path_pie = os.path.join(path, save_dir + save_folder_pie)
 
+# call plotting functions on each column
 for column in all_columns:
     
-    # call plotting functions on each column
-    bar_plotter(f"{column}", save_path) 
-    pie_plotter(f"{column}", save_path)
+    bar_plotter(f"{column}", save_path_counts) 
+    pie_plotter(f"{column}", save_path_pie)
 
 #%% stats
 
@@ -186,6 +316,34 @@ idx_nom = [i for i in range(len(all_columns)) if i not in idx_ord]
 ordinal_categories = [all_columns[idx] for idx in idx_ord]
 nominal_categories = [all_columns[idx] for idx in idx_nom]
 
-
 #%%
+
+def ordinal_descriptive_stats(df, column):
+        
+    ordinal_list = []
+    total = 0
+    for i, j in df[f"{column}"].items():
+        total += j
+        for n in range(j):
+            ordinal_list.append(i)
+    
+    mode = st.mode(ordinal_list)
+    median = ordinal_list[int(len(ordinal_list)/2)]
+    quartile_25 = ordinal_list[int(len(ordinal_list)*0.25)]
+    quartile_75 = ordinal_list[int(len(ordinal_list)*0.75)]
+    max = ordinal_list[-1]
+    min = ordinal_list[0]
+    
+    return mode, max, quartile_75, median, quartile_25, min
+
+
+ordinal_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min"])
+ordinal_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min"])
+for column in ordinal_categories:
+    
+    mode, max, quartile_75, median, quartile_25, min = ordinal_descriptive_stats(rent_data_dict, column)
+    ordinal_rent_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min]
+    
+    mode, max, quartile_75, median, quartile_25, min = ordinal_descriptive_stats(own_data_dict, column)
+    ordinal_own_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min]
 
