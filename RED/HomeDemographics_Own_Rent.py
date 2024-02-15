@@ -61,8 +61,18 @@ for column_name in df_own_columns:
     own_data_dict[f"{column_name}"] = category_counts
   
 #%% manually reorder ordinal categories that were sorted by string
+# treating "prefer not to say" as a NaN and removing
 
 # rent
+
+rent_data_dict["education"] = {
+    "Some high school, no diploma": 147,
+    "High school diploma or GED": 1392,
+    "Associates degree or trade school": 645,
+    "Bachelor's degree": 399,
+    "Graduate or professional degree": 147
+    }
+
 rent_data_dict["energyexpenses"] = {
     "Up to $25": 57,
     "$26-$50": 143,
@@ -85,7 +95,7 @@ rent_data_dict["hhincome"] = {
     "100,001-125,000": 76,
     "125,001-150,000": 55,
     "150,001-175,000": 65,
-    "175,001 or more": 40,
+    "175,001 or more": 40
     }
 
 rent_data_dict["homesqft"] = {
@@ -95,7 +105,7 @@ rent_data_dict["homesqft"] = {
     "1,501-2,000 square feet": 567,
     "2,001-2,500 square feet": 346,
     "2,501-3,000 square feet": 163,
-    "3,000 square feet or larger": 64,
+    "3,000 square feet or larger": 64
     }
 
 rent_data_dict["homeyrs"] = {
@@ -103,7 +113,7 @@ rent_data_dict["homeyrs"] = {
     "1-3 years": 1000,
     "3-5 years": 666,
     "5-10 years": 520,
-    "10 years or longer": 306, 
+    "10 years or longer": 306
     }
 
 rent_data_dict["mortgagerentbins"] = {
@@ -130,70 +140,79 @@ rent_data_dict["yrbuilt"] = {
     }
 
 # own
+
+own_data_dict["education"] = {
+    "Some high school, no diploma": 113,
+    "High school diploma or GED": 1790,
+    "Associates degree or trade school": 1542,
+    "Bachelor's degree": 1828,
+    "Graduate or professional degree": 1296
+    }
+
 own_data_dict["energyexpenses"] = {
-    "Up to $25": 57,
-    "$26-$50": 143,
-    "$51-$100": 422,
-    "$101-$150": 600,
-    "$151-$200": 550,
-    "$201-$250": 379,
-    "$251-$300": 290,
-    "Greater than $300": 315    
+    "Up to $25": 41,
+    "$26-$50": 138,
+    "$51-$100": 740,
+    "$101-$150": 1352,
+    "$151-$200": 1545,
+    "$201-$250": 1184,
+    "$251-$300": 903,
+    "Greater than $300": 743
     }
 
 own_data_dict["hhincome"] = {
-    "0": 54,
-    "1-15,000": 456,
-    "15,001-30,000": 762,
-    "30,001-45,000": 534,
-    "45,001-60,000": 405,
-    "60,001-75,000": 203,
-    "75,001-100,000": 190,
-    "100,001-125,000": 76,
-    "125,001-150,000": 55,
-    "150,001-175,000": 65,
-    "175,001 or more": 40,
+    "0": 39,
+    "1-15,000": 300,
+    "15,001-30,000": 740,
+    "30,001-45,000": 862,
+    "45,001-60,000": 961,
+    "60,001-75,000": 738,
+    "75,001-100,000": 1034,
+    "100,001-125,000": 637,
+    "125,001-150,000": 569,
+    "150,001-175,000": 404,
+    "175,001 or more": 510
     }
 
 own_data_dict["homesqft"] = {
-    "500 square feet or smaller": 110,
-    "501-1,000 square feet": 542,
-    "1,001-1,500 square feet": 688,
-    "1,501-2,000 square feet": 567,
-    "2,001-2,500 square feet": 346,
-    "2,501-3,000 square feet": 163,
-    "3,000 square feet or larger": 64,
+    "500 square feet or smaller": 73,
+    "501-1,000 square feet": 441,
+    "1,001-1,500 square feet": 1389,
+    "1,501-2,000 square feet": 1889,
+    "2,001-2,500 square feet": 1523,
+    "2,501-3,000 square feet": 830,
+    "3,000 square feet or larger": 531
     }
 
 own_data_dict["homeyrs"] = {
-    "Less than 1 year": 402,
-    "1-3 years": 1000,
-    "3-5 years": 666,
-    "5-10 years": 520,
-    "10 years or longer": 306, 
+    "Less than 1 year": 236,
+    "1-3 years": 873,
+    "3-5 years": 1144,
+    "5-10 years": 1394,
+    "10 years or longer": 3346
     }
 
-own_data_dict["mortgageownbins"] = {
-    "$0-700": 1069,
-    "$701-1,500": 1285,
-    "$1,501-2,000": 238,
-    "$2,001-3,000": 156,
-    "$3,001-4,000": 36,
-    "$4,001-5,000": 26,
-    "$5,001-6,000": 22,
-    "$6,001-7,500": 17,
-    "$7,501-10,000": 7,
-    "Over $10,000": 5
+own_data_dict["mortgagerentbins"] = {
+    "$0-700": 2433,
+    "$701-1,500": 2077,
+    "$1,501-2,000": 800,
+    "$2,001-3,000": 642,
+    "$3,001-4,000": 180,
+    "$4,001-5,000": 113,
+    "$5,001-6,000": 114,
+    "$6,001-7,500": 77,
+    "$7,501-10,000": 56,
+    "Over $10,000": 71
     }
 
 own_data_dict["yrbuilt"] = {
-    "before 1900": 49,
-    "1901-1930": 148,
-    "1930-1959": 357,
-    "1960-1979": 598,
-    "1980-1990": 475,
-    "1991-2010": 447,
-    "after 2010": 221    
+    "before 1900": 169 ,
+    "1901-1930": 316,
+    "1930-1959": 901,
+    "1960-1979": 1337,
+    "1980-1990": 1113,
+    "1991-2010": 1825,
+    "after 2010": 1061
     }
 
 #%% function to plot renter vs. owner
@@ -216,7 +235,10 @@ def bar_plotter(column, save_path=None):
     padded_own_values = pad_array(own_values, max_len)
     
     # concatenate categories
-    categories = sorted(list(set( rent_category + own_category )))
+    categories = rent_category
+    for cat in own_category:
+        if cat not in rent_category:
+            categories.append(cat)
     
     # set fig, ax parameters
     x_axis = np.arange(len(categories))
@@ -246,9 +268,11 @@ def bar_plotter(column, save_path=None):
     plt.title(f"Column: {column}")
     plt.legend()
     
-    if path != None:
+    if save_path != None:
         fig.tight_layout()
-        plt.savefig(os.path.join(save_path, f"{column}_own_rent_plot.jpeg"))
+        plt.savefig(os.path.join(save_path, f"{column}_own_rent_plot.png"),
+                    dpi = 300
+                    )
     
     return None
 
@@ -286,9 +310,11 @@ def pie_plotter(column, save_path=None):
     fig.suptitle(f"Column: {column}", fontsize = 10)
     fig.legend(loc = "lower center", labels = labels)
     
-    if path != None:
+    if save_path != None:
         #fig.tight_layout()
-        plt.savefig(os.path.join(save_path, f"{column}_own_rent_pie.jpeg"))
+        plt.savefig(os.path.join(save_path, f"{column}_own_rent_pie.png"),
+                    dpi = 300
+                    )
     
     return None
 
@@ -309,14 +335,21 @@ for column in all_columns:
 
 #%% stats
 
-# split data into ordinal and nominal groups
-idx_ord = [5,9,10,11,13,14,23,26]
-idx_nom = [i for i in range(len(all_columns)) if i not in idx_ord]
+# split data into ordinal, nominal, and discrete groups
+idx_dis = [0,1,2,9]
+idx_ord = [3,5,10,11,13,14,23,26]
+idx_nom = [i for i in range(len(all_columns)) if i not in idx_ord and i not in idx_dis]
 
+discrete_categories = [all_columns[idx] for idx in idx_dis]
 ordinal_categories = [all_columns[idx] for idx in idx_ord]
 nominal_categories = [all_columns[idx] for idx in idx_nom]
 
-#%%
+#%% run descriptive statistics on discrete numerical data
+
+discrete_rent_descriptive_stats_df = df_rent_stats[discrete_categories]
+discrete_own_descriptive_stats_df = df_own_stats[discrete_categories]
+
+#%% run descriptive statistics on ordinal categorical and binned data
 
 def ordinal_descriptive_stats(df, column):
         
@@ -347,3 +380,27 @@ for column in ordinal_categories:
     mode, max, quartile_75, median, quartile_25, min = ordinal_descriptive_stats(own_data_dict, column)
     ordinal_own_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min]
 
+#%% run descriptive statistics on nominal categorical data
+
+def nominal_descriptive_stats(df, column):
+        
+    nominal_list = []
+    total = 0
+    for i, j in df[f"{column}"].items():
+        total += j
+        for n in range(j):
+            nominal_list.append(i)
+    
+    mode = st.mode(nominal_list)
+    
+    return mode
+
+nominal_rent_descriptive_stats_df = pd.DataFrame(index = ["mode"])
+nominal_own_descriptive_stats_df = pd.DataFrame(index = ["mode"])
+for column in nominal_categories:
+    
+    mode = nominal_descriptive_stats(rent_data_dict, column)
+    nominal_rent_descriptive_stats_df[f"{column}"] = [mode]
+    
+    mode = nominal_descriptive_stats(own_data_dict, column)
+    nominal_own_descriptive_stats_df[f"{column}"] = [mode]
