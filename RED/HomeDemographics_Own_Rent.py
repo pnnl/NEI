@@ -17,12 +17,6 @@ df = pd.read_csv(filepath, encoding = "cp1252")
 df_rent = df.loc[(df.loc[:, "own_rent"] == "Rent")]
 df_own = df.loc[(df.loc[:, "own_rent"] == "Own")]                               
 
-df_rent_stats = df_rent.describe()
-df_own_stats = df_own.describe()
-
-df_rent_count = len(df_rent)
-df_own_count = len(df_own)
-
 #%% find the unique categories of each column, nans excluded
 
 # renters
@@ -346,8 +340,28 @@ nominal_categories = [all_columns[idx] for idx in idx_nom]
 
 #%% run descriptive statistics on discrete numerical data
 
-discrete_rent_descriptive_stats_df = df_rent_stats[discrete_categories]
-discrete_own_descriptive_stats_df = df_own_stats[discrete_categories]
+def discrete_descriptive_stats(df, column):
+    
+    mode = st.mode(df[f"{column}"])
+    average = round(np.mean(df[f"{column}"]), 2)
+    stdev = round(np.std(df[f"{column}"]), 2)
+    median = np.median(df[f"{column}"])
+    quartile_25 = np.quantile(df[f"{column}"], 0.25)
+    quartile_75 = np.quantile(df[f"{column}"], 0.75)
+    max = np.max(df[f"{column}"])
+    min = np.min(df[f"{column}"])
+    
+    return average, stdev, mode, max, quartile_75, median, quartile_25, min
+
+discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["average", "stdev", "mode", "max", "quartile_75", "median", "quartile_25", "min"])
+discrete_own_descriptive_stats_df = pd.DataFrame(index = ["average", "stdev", "mode", "max", "quartile_75", "median", "quartile_25", "min"])
+for column in discrete_categories:
+    
+    average, stdev, mode, max, quartile_75, median, quartile_25, min = discrete_descriptive_stats(df_rent, column)
+    discrete_rent_descriptive_stats_df[f"{column}"] = [average, stdev, mode, max, quartile_75, median, quartile_25, min]
+    
+    average, stdev, mode, max, quartile_75, median, quartile_25, min = discrete_descriptive_stats(df_own, column)
+    discrete_own_descriptive_stats_df[f"{column}"] = [average, stdev, mode, max, quartile_75, median, quartile_25, min]
 
 #%% run descriptive statistics on ordinal categorical and binned data
 
@@ -404,3 +418,7 @@ for column in nominal_categories:
     
     mode = nominal_descriptive_stats(own_data_dict, column)
     nominal_own_descriptive_stats_df[f"{column}"] = [mode]
+
+#%% chi** statistcal comparison of own vs. rent data
+
+
