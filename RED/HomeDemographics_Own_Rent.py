@@ -3,12 +3,13 @@ import os
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt
+import seaborn as sns
 import statistics as st
 
 #%% open data csv into dataframe, change default encoding
 
 path = os.getcwd()
-file = r"home.demographics_30jan2024.csv"
+file = r"home_demographics_30jan2024.csv"
 filepath = os.path.join(path, file)
 df = pd.read_csv(filepath, encoding = "cp1252")
 
@@ -240,8 +241,8 @@ def bar_plotter(column, save_path=None):
     fig, ax = plt.subplots()
     
     # plot owner and renter plots next to each other on same chart
-    plt.bar(x_axis - width/2, padded_rent_values, width, color = "darkgreen", label = "Renter")
-    plt.bar(x_axis + width/2, padded_own_values, width, color = "maroon", label = "Owner")
+    plt.bar(x_axis - width/2, padded_rent_values, width, color = plt.colormaps["viridis"].colors[0], label = "Renter")
+    plt.bar(x_axis + width/2, padded_own_values, width, color = plt.colormaps["viridis"].colors[192], label = "Owner")
     
     for i, cat in enumerate(categories):
         text = ax.text(i, -200, cat, ha = "center", va = "top") # set alignment and position for x labels
@@ -282,16 +283,18 @@ def pie_plotter(column, save_path=None):
     own_values = own_data_dict[f"{column}"].values()
     
     plt.rc("font", size = 7)
-    plt.rc("axes", titlesize=9)
+    plt.rc("axes", titlesize = 9)
+    
+    plt.set_cmap("viridis")
     
     fig, ax = plt.subplots(1, 2, 
                            #constrained_layout=True
                            )
     
-    ax[0].pie(rent_values, labels = rent_categories, autopct = "%1.0f%%", labeldistance = None, pctdistance = 1.15)
+    ax[0].pie(rent_values, labels = rent_categories, autopct = "%1.0f%%", labeldistance = None, colors = sns.color_palette("viridis"), pctdistance = 1.15)
     ax[0].set_title("Rent")
     
-    ax[1].pie(own_values, labels = own_categories, autopct = "%1.0f%%", labeldistance = None, pctdistance = 1.15)
+    ax[1].pie(own_values, labels = own_categories, autopct = "%1.0f%%", labeldistance = None, colors = sns.color_palette("viridis"), pctdistance = 1.15)
     ax[1].set_title("Own")
     
     handles, labels = ax[0].get_legend_handles_labels()
@@ -340,7 +343,7 @@ nominal_categories = [all_columns[idx] for idx in idx_nom]
 
 #%% run descriptive statistics on discrete numerical data
 
-def discrete_descriptive_stats(df, column):
+def discrete_descriptive_stats(df, column): # add skew kertosis
     
     mode = st.mode(df[f"{column}"])
     average = round(np.mean(df[f"{column}"]), 2)
