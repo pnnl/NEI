@@ -4,10 +4,12 @@ import geopandas as gpd
 import fiona as fi
 import matplotlib.pyplot as plt
 
-#%% open gdb into a geodataframe
+#%% open noise geodatabase into a geodataframe
 
-gdb_path = os.getcwd() # set Spyder working folder to file location
-gdf = gpd.read_file(gdb_path, driver="FileGDB")
+datsets_path = os.getcwd() # set Spyder working folder to file location: \NEB Decarb - General\Datasets\
+gdb_path = r"National Transportation Noise Map\CONUS_rail_road_and_aviation_noise_2020\CONUS_rail_road_and_aviation_noise_2020\CONUS_rail_road_and_aviation_noise_2020.gdb"
+gbd_filepath = os.path.join(datsets_path, gdb_path)
+gdf = gpd.read_file(gbd_filepath, driver="FileGDB")
 
 #%% set map projection to USA
 
@@ -42,7 +44,5 @@ def plot_layer(layer=0):
     plt.clf()
 
 plot_layer(6)
-
-#%%
 
 
