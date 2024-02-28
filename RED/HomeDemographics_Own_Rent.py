@@ -8,10 +8,10 @@ import statistics as st
 
 #%% open data csv into dataframe, change default encoding
 
-path = os.getcwd()
+path = os.getcwd() # \User-Centered Research - General\clean data\
 file = r"home_demographics_30jan2024.csv"
 filepath = os.path.join(path, file)
-df = pd.read_csv(filepath, encoding = "cp1252")
+df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
 
 #%% split data into renter vs. owner
 
@@ -354,17 +354,17 @@ def discrete_descriptive_stats(df, column): # add skew kertosis
     max = np.max(df[f"{column}"])
     min = np.min(df[f"{column}"])
     
-    return average, stdev, mode, max, quartile_75, median, quartile_25, min
+    return mode, max, quartile_75, median, quartile_25, min, average, stdev
 
-discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["average", "stdev", "mode", "max", "quartile_75", "median", "quartile_25", "min"])
-discrete_own_descriptive_stats_df = pd.DataFrame(index = ["average", "stdev", "mode", "max", "quartile_75", "median", "quartile_25", "min"])
+discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev"])
+discrete_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev",])
 for column in discrete_categories:
     
-    average, stdev, mode, max, quartile_75, median, quartile_25, min = discrete_descriptive_stats(df_rent, column)
-    discrete_rent_descriptive_stats_df[f"{column}"] = [average, stdev, mode, max, quartile_75, median, quartile_25, min]
+    mode, max, quartile_75, median, quartile_25, min, average, stdev = discrete_descriptive_stats(df_rent, column)
+    discrete_rent_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev]
     
-    average, stdev, mode, max, quartile_75, median, quartile_25, min = discrete_descriptive_stats(df_own, column)
-    discrete_own_descriptive_stats_df[f"{column}"] = [average, stdev, mode, max, quartile_75, median, quartile_25, min]
+    mode, max, quartile_75, median, quartile_25, min, average, stdev = discrete_descriptive_stats(df_own, column)
+    discrete_own_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev]
 
 #%% run descriptive statistics on ordinal categorical and binned data
 
@@ -421,6 +421,21 @@ for column in nominal_categories:
     
     mode = nominal_descriptive_stats(own_data_dict, column)
     nominal_own_descriptive_stats_df[f"{column}"] = [mode]
+
+#%% combine stats dfs into one df and export
+
+# add column for rent or own
+descriptive_stats_rent_combined_df = pd.concat([discrete_rent_descriptive_stats_df, ordinal_rent_descriptive_stats_df, nominal_rent_descriptive_stats_df], axis = 1).T
+descriptive_stats_rent_combined_df.insert(0, column = "Rent/Own", value = "Rent")
+
+descriptive_stats_own_combined_df = pd.concat([discrete_own_descriptive_stats_df, ordinal_own_descriptive_stats_df, nominal_own_descriptive_stats_df], axis = 1).T
+descriptive_stats_own_combined_df.insert(0, column = "Rent/Own", value = "Own")
+
+descriptive_stats_all_combined_df = pd.concat([descriptive_stats_rent_combined_df, descriptive_stats_own_combined_df], axis = 0)
+
+#%% combine races into one column
+
+
 
 #%% chi** statistcal comparison of own vs. rent data
 
