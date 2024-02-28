@@ -91,10 +91,10 @@ df_full = pd.concat([df_metadata,df_diff], axis=1)
 
 
 
+# Select numerical columns excluding the specific non-numerical or grouping column
+numerical_cols = df_full.select_dtypes(include=[np.number]).columns.drop('in.ashrae_iecc_climate_zone_2004', errors='ignore')
 
-
-
-
+df_averaged = df_full.groupby('in.ashrae_iecc_climate_zone_2004')[numerical_cols].mean().reset_index()
 
 
 
