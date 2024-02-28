@@ -101,4 +101,20 @@ df_averaged_cz.to_clipboard(index=False, header=True)
 
 
 
+##Do the same comparison now with Envelope Upgrade option 2
+# Creating a new DataFrame with the selected columns
+df2_new = pd.DataFrame(df2.loc[:, "bldg_id":"upgrade"].join(df2.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
 
+
+df_diff2 = df2_new - df0_new
+
+df_full2 = pd.concat([df_metadata,df_diff2], axis=1)
+
+
+# Select numerical columns excluding the specific non-numerical or grouping column
+numerical_cols2 = df_full2.select_dtypes(include=[np.number]).columns.drop('in.ashrae_iecc_climate_zone_2004', errors='ignore')
+
+df_averaged_cz2 = df_full2.groupby('in.ashrae_iecc_climate_zone_2004')[numerical_cols].mean().reset_index()
+
+#copy to clipboard:
+df_averaged_cz2.to_clipboard(index=False, header=True)
