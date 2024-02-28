@@ -31,164 +31,73 @@ share_path = fr"C:\Users\{username}\\" # insert your username in the file path
 path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock" #os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
 file = r"baseline_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
 filepath = os.path.join(path, file) # add the file to the folder path
-df = pd.read_csv(filepath) # read the file at the speicifed filepath into a pandas dataframe
+df0 = pd.read_csv(filepath) # read the file at the speicifed filepath into a pandas dataframe
 
 file1 = r"upgrade01_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath1 = os.path.join(path, file) # add the file to the folder path
-df1 = pd.read_csv(filepath) 
+filepath1 = os.path.join(path, file1) # add the file to the folder path
+df1 = pd.read_csv(filepath1) 
 
 file2 = r"upgrade02_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath2 = os.path.join(path, file) # add the file to the folder path
-df2 = pd.read_csv(filepath) 
+filepath2 = os.path.join(path, file2) # add the file to the folder path
+df2 = pd.read_csv(filepath2) 
 
 file3 = r"upgrade03_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath3 = os.path.join(path, file) # add the file to the folder path
-df3 = pd.read_csv(filepath) 
+filepath3 = os.path.join(path, file3) # add the file to the folder path
+df3 = pd.read_csv(filepath3) 
 
 file4 = r"upgrade04_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath4 = os.path.join(path, file) # add the file to the folder path
-df4 = pd.read_csv(filepath) 
+filepath4 = os.path.join(path, file4) # add the file to the folder path
+df4 = pd.read_csv(filepath4) 
 
 file5 = r"upgrade05_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath5 = os.path.join(path, file) # add the file to the folder path
-df5 = pd.read_csv(filepath) 
+filepath5 = os.path.join(path, file5) # add the file to the folder path
+df5 = pd.read_csv(filepath5) 
 
 file6 = r"upgrade06_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath6 = os.path.join(path, file) # add the file to the folder path
-df6 = pd.read_csv(filepath) 
+filepath6 = os.path.join(path, file6) # add the file to the folder path
+df6 = pd.read_csv(filepath6) 
 
 file7 = r"upgrade07_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath7 = os.path.join(path, file) # add the file to the folder path
-df7 = pd.read_csv(filepath) 
+filepath7 = os.path.join(path, file7) # add the file to the folder path
+df7 = pd.read_csv(filepath7) 
 
 file8 = r"upgrade08_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath8 = os.path.join(path, file) # add the file to the folder path
-df8 = pd.read_csv(filepath) 
+filepath8 = os.path.join(path, file8) # add the file to the folder path
+df8 = pd.read_csv(filepath8) 
 
 file9 = r"upgrade09_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath9 = os.path.join(path, file) # add the file to the folder path
-df9 = pd.read_csv(filepath) 
+filepath9 = os.path.join(path, file9) # add the file to the folder path
+df9 = pd.read_csv(filepath9) 
 
 file10 = r"upgrade10_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath10 = os.path.join(path, file) # add the file to the folder path
-df10 = pd.read_csv(filepath) 
+filepath10 = os.path.join(path, file10) # add the file to the folder path
+df10 = pd.read_csv(filepath10) 
 
 
-#%% open, examine, and select data
+#Now get the info you need from each
+for column in df0.columns:
+    print(column)
 
-df_stats = df.describe() # descriptive statistics on each column
 
-# find and remove NaNs
-nans = df.isnull().sum() # check how many nans are in each column
-df_no_nans = df.dropna() # removes all nans, or can set thresh to limit how many nans are needed to drop that row or column
-#df_nans_filled = df.fillna(0).astype("int") # replace all nans with a value (useful for plotting, sometimes nans break matplotlib)
+# Creating a new DataFrame with the selected columns
+df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
+df1_new = pd.DataFrame(df1.loc[:, "bldg_id":"upgrade"].join(df1.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
 
-#df_sel_col_name = df[["homesize", "yearsinhome", "heatpumpHVAC"]] # select columns by name
-#df_sliced_name = df.loc[:, "yearbuilt" : "yearsinhome"] # slice by the name of the columns, ":" by itself means "all" rows or columns
-#df_sliced_idx = df.iloc[0:100, 2:5] # slice the dataframe by index [rows, columns]
-#df_sliced_conditional = df.loc[(df.loc[:, "heatpumpwh"] == 1)] # select rows if a column is equal to a certain value
 
-#df_heatpumpwh_transposed = df_sliced_conditional.T # transpose a dataframe so rows are now columns
+df_diff = df1_new - df0_new
+df_metadata = df0[['bldg_id', 'in.sqft', 'weight', 'in.ashrae_iecc_climate_zone_2004', 'in.census_division', 'in.census_region', 'in.county']]
 
-#%% basic Pythonic operations
+df_full = pd.concat([df_metadata,df_diff], axis=1)
 
-# define a simple function
-def age_count_for_loop(df, threshold):
-    """
-    Count all participants over the threshold age.
-    """
-    
-    i = 0
-    for age in df["age"]:
-        if age > threshold:
-            i += 1
-            
-    return i
 
-# list comprehension is a Python technique that can replace a for loop while making a list
-list_comp = [i for i in df.columns]
 
-# e.g., the list comprehension below does the same thing as the for loop in the previous function
-def age_count_list_comp(df, threshold):
-    
-    i = 0
-    [i := i + 1 for age in df["age"] if age > threshold]
-    
-    return i
 
-age_with_loop = age_count_for_loop(df, 65)
-age_with_listcomp = age_count_list_comp(df, 65)
-print(age_with_loop == age_with_listcomp) # both functions should return the same value
 
-# you can use a switch-case statement instead of an if-else iteration (only for Python versions 3.10+)
-def has_heatpump(df):
-    """
-    Check what type of heat pump a participant has.
-    """
-    
-    match (df["heatpumpwh"], df["heatpumpHVAC"]):
-        case (0, 0):
-            return "None"
-        case (1, 0):
-            return "Water Heater"
-        case (0, 1):
-            return "HVAC"
-        case (1, 1):
-            return "Both"
-        case _:
-            return "Unknown"
 
-# lambda creates a local function that can be applied in one line. axis = 1 applies function to columns, and 0 to rows
-df["heatpump"] = df.apply(lambda df: has_heatpump(df), axis = 1) # create a new column in the dataframe called "heatpump"
 
-# dictionaries are a Python data structure similar to JSON, they can store any type of data in key-value pairs
-number_heatpumps_dict = {
-                        "Both": sum(df["heatpump"] == "Both"),
-                        "HVAC": sum(df["heatpump"] == "HVAC"),
-                        "Water Heater": sum(df["heatpump"] == "Water Heater"),
-                        "None": sum(df["heatpump"] == "None"),
-                        "Unknown": sum(df["heatpump"] == "Unknown")
-                        }
 
-# dictionary comprehension can create a dictionary similar to how list comprehension works, the code below does the same thing as the previous dict
-number_heatpumps_dict_comp = {df["heatpump"].value_counts().index[i]: df["heatpump"].value_counts().iloc[i] for i in range(len(df["heatpump"].value_counts()))}
 
-#%% plot the data with seaborn and matplotlib
 
-# create a plot of education vs. income
-sns.lineplot(data = df, x = df["education"], y = df["income"])
-plt.show() # display the plot in the IDE
-plt.clf() # clear the plot from active memory to show the next one
 
-# create a boxplot of income and customize the visual properties and labels
-sns.boxplot(data = df["income"], width = 0.25,
-            boxprops = {"facecolor": "lightsteelblue", "edgecolor": "black"},
-            medianprops = {"color": "r","linewidth": 2},
-            whiskerprops = {"color": "black"},
-            flierprops = {"marker": "x"}
-            )
-plt.title("Income")
-plt.xlabel("All")
-plt.xticks([])
-plt.ylabel("$")
-plt.show()
-plt.clf()
 
-# create a pivot table and plot a heat map
-category_order = ["Both", "HVAC", "Water Heater", "None"] # set order for labels, otherwise default is alphabetical/ascending
-df_pivot = pd.pivot_table(data = df, index = "heatpump", columns = "education", values = "income").reindex(category_order)
-sns.heatmap(data = df_pivot, cmap = "Spectral_r") # set the color palette with cmap, there are many built-in color options
-plt.title("Income")
-plt.show()
-plt.savefig("income_heatmap.jpeg") # save the plot as an image in your current folder
-plt.clf()
 
-#%% save output as a csv file
-
-df_to_save = df_heatpumpwh_transposed
-
-current_date = dt.today().strftime("%m-%d-%y")
-save_file_name = f"Results_{current_date}.csv"
-save_path = os.path.join(path, save_file_name)
-
-df_to_save.to_csv(save_path)
