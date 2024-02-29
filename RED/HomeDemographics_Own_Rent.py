@@ -21,7 +21,7 @@ df_own = df.loc[(df.loc[:, "own_rent"] == "Own")]
 #%% find the unique categories of each column, nans excluded
 
 # renters
-df_rent_columns = df_rent.drop(["PermNum", "own_rent","mortgagerent"], axis = 1).columns # drop unneeded columns
+df_rent_columns = df_rent.drop(["PermNum", "own_rent", "race_prefernottosay", "mortgagerent"], axis = 1).columns # drop unneeded columns
 rent_column_categories = {df_rent_columns[i]: 
                           sorted(df_rent[df_rent_columns[i]].unique()
                           [~pd.isnull(df_rent[df_rent_columns[i]].unique())])
@@ -29,7 +29,7 @@ rent_column_categories = {df_rent_columns[i]:
                           }
 
 # owners
-df_own_columns = df_own.drop(["PermNum", "own_rent", "mortgagerent"], axis = 1).columns # drop unneeded columns
+df_own_columns = df_own.drop(["PermNum", "own_rent", "race_prefernottosay", "mortgagerent"], axis = 1).columns # drop unneeded columns
 own_column_categories = {df_own_columns[i]: 
                          sorted(df_own[df_own_columns[i]].unique()
                          [~pd.isnull(df_own[df_own_columns[i]].unique())])
@@ -332,7 +332,7 @@ for column in all_columns:
 
 #%% stats
 
-# split data into ordinal, nominal, and discrete groups
+# split data into discrete, ordinal, and nominal groups
 idx_dis = [0,1,2,9]
 idx_ord = [3,5,10,11,13,14,23,26]
 idx_nom = [i for i in range(len(all_columns)) if i not in idx_ord and i not in idx_dis]
@@ -433,9 +433,25 @@ descriptive_stats_own_combined_df.insert(0, column = "Rent/Own", value = "Own")
 
 descriptive_stats_all_combined_df = pd.concat([descriptive_stats_rent_combined_df, descriptive_stats_own_combined_df], axis = 0)
 
-#%% combine races into one column
+#%% combine race counts into dictionary
 
+df_rent_races = df_rent.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
+df_rent_races.columns = [column.replace("race_", "") for column in df_rent_races.columns]
+df_rent_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
 
+df_own_races = df_own.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
+df_own_races.columns = [column.replace("race_", "") for column in df_own_races.columns]
+df_own_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
+
+rent_races_data_dict = {}
+for column_name in df_rent_races.columns:
+    column_counts = {column_name: sum(df_rent_races[f"{column_name}"])}
+    rent_races_data_dict[f"{column_name}"] = column_counts
+
+own_races_data_dict = {}
+for column_name in df_own_races.columns:
+    column_counts = {column_name: sum(df_own_races[f"{column_name}"])}
+    own_races_data_dict[f"{column_name}"] = column_counts
 
 #%% chi** statistcal comparison of own vs. rent data
 
