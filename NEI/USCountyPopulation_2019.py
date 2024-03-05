@@ -18,8 +18,7 @@ shp_df = gpd.read_file(shp_filepath)
 shp_df = shp_df.to_crs("ESRI:102039")
 
 #%% open census county population data into df
-# data.census.gov
-# population estimates annual for 2019
+# data.census.gov population estimates annual for 2019
 
 pop_path = r"CensusPopulationEstimates\PopulationEstimatesByCounty\PopulationEstimatesByCounty_Table.csv"
 pop_filepath = os.path.join(datsets_path, pop_path)
@@ -49,27 +48,30 @@ missing_geometry = county_population_gdf[county_population_gdf["geometry"].isna(
 
 #%% plot population estimates data on county geomtry map
 
-fig, ax = plt.subplots(1, figsize=(10, 6))
-county_population_gdf.plot(column = "POP", cmap = "viridis", ax = ax, cax = ax)
+fig, ax = plt.subplots(1, figsize = (10, 6))
+vmax = 1000000 # set the max population per county to plot
+county_population_gdf.plot(column = "POP", cmap = "viridis", vmax = vmax, ax = ax, cax = ax)
 
+# add annotations to map plot
 ax.axis("off")
-ax.set_title("Population by County 2019")
-ax.annotate("Source: U.S. Census, 2019", xy=(0.1, .08), xycoords="figure fraction", 
-            horizontalalignment="left", verticalalignment="top", fontsize=12, color="#555555"
+ax.set_title("Population (in millions) by County, 2019")
+ax.annotate("Source: U.S. Census, 2019", xy = (0.1, 0.08), xycoords = "figure fraction", 
+            horizontalalignment = "left", verticalalignment = "top", fontsize = 12, color = "grey"
             )
 
 # Create colorbar as a legend
-sm = plt.cm.ScalarMappable(cmap="viridis",
-                           norm=plt.Normalize(vmin=np.min(gdf2_2019_USA["POP"]), vmax=np.max(gdf2_2019_USA["POP"]))
+sm = plt.cm.ScalarMappable(cmap = "viridis",
+                           norm = plt.Normalize(vmin = np.min(gdf2_2019_USA["POP"]), vmax = vmax)
                            )
 sm._A = [] # empty array for the data range
 cbar = fig.colorbar(sm, ax = ax) # add the colorbar to the figure
 
+# save plot and export
 save_path = r"CensusPopulationEstimates"
 save_filepath = os.path.join(datsets_path, save_path)
-fig.savefig(os.path.join(save_filepath, "US_Population_County_2019.png"), dpi=300)
+fig.savefig(os.path.join(save_filepath, "US_Population_County_2019.png"), dpi = 300)
 
-#%% test geodatasets
+#%% test geodatasets for plotting
 
 all_geodatasets = geodatasets.data.flatten().keys()
 
