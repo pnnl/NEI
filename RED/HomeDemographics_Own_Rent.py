@@ -5,13 +5,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statistics as st
+from matplotlib.colors import LinearSegmentedColormap, Colormap
 
 #%% open data csv into dataframe, change default encoding
 
+# set check to make sure user directory is correct
 path = os.getcwd() # \User-Centered Research - General\clean data\
 file = r"home_demographics_30jan2024.csv"
 filepath = os.path.join(path, file)
 df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
+
+# set save path for exports
+save_dir = r"home_demographics_30jan2024_plots"
 
 #%% split data into renter vs. owner
 
@@ -54,7 +59,36 @@ for column_name in df_own_columns:
     categories = own_column_categories.get(f"{column_name}")
     category_counts = {str(category): len(df_own.loc[(df_own.loc[:, f"{column_name}"] == category)]) for category in categories}
     own_data_dict[f"{column_name}"] = category_counts
-  
+
+#%% combine race counts into dictionary and add to data_dicts
+
+# rent
+df_rent_races = df_rent.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
+df_rent_races.columns = [column.replace("race_", "") for column in df_rent_races.columns]
+df_rent_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
+
+rent_races_all = {}
+for column_name in df_rent_races.columns:
+    column_counts = sum(df_rent_races[f"{column_name}"])
+    rent_races_all[f"{column_name}"] = column_counts
+
+rent_data_dict["races_all"] = rent_races_all
+
+# own
+df_own_races = df_own.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
+df_own_races.columns = [column.replace("race_", "") for column in df_own_races.columns]
+df_own_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
+
+own_races_all = {}
+for column_name in df_own_races.columns:
+    column_counts = sum(df_own_races[f"{column_name}"])
+    own_races_all[f"{column_name}"] = column_counts
+
+own_data_dict["races_all"] = own_races_all
+
+# add races_all to all_columns list
+all_columns.insert(22, "races_all")
+
 #%% manually reorder ordinal categories that were sorted by string
 # treating "prefer not to say" as a NaN and removing
 
@@ -217,15 +251,16 @@ def bar_plotter(column, save_path=None):
     
     rent_category = list(rent_data_dict[f"{column}"].keys())
     rent_values = list(rent_data_dict[f"{column}"].values())
-    
+
     own_category = list(own_data_dict[f"{column}"].keys())
     own_values = list(own_data_dict[f"{column}"].values())
-    
+
     # adjust values for uneven x-axis categories by adding zeroes
     def pad_array(vals, target_len):
         return np.pad(vals, (0, target_len - len(vals)), mode = "constant")
     
-    max_len = max(len(rent_values), len(own_values))
+
+    max_len = np.maximum(len(rent_values), len(own_values))
     padded_rent_values = pad_array(rent_values, max_len)
     padded_own_values = pad_array(own_values, max_len)
     
@@ -242,13 +277,13 @@ def bar_plotter(column, save_path=None):
     
     # plot owner and renter plots next to each other on same chart
     plt.bar(x_axis - width/2, padded_rent_values, width, color = plt.colormaps["viridis"].colors[0], label = "Renter")
-    plt.bar(x_axis + width/2, padded_own_values, width, color = plt.colormaps["viridis"].colors[192], label = "Owner")
+    plt.bar(x_axis + width/2, padded_own_values, width, color = plt.colormaps["viridis"].colors[195], label = "Owner")
     
     for i, cat in enumerate(categories):
         text = ax.text(i, -200, cat, ha = "center", va = "top") # set alignment and position for x labels
         
         # rotate x label if length overlaps with other labels
-        if len (cat) > 12: # if any over len
+        if len(cat) > 12: # if any over len
             angle = 90
         elif len(cat) > 6:
             angle = 45
@@ -285,16 +320,20 @@ def pie_plotter(column, save_path=None):
     plt.rc("font", size = 7)
     plt.rc("axes", titlesize = 9)
     
-    plt.set_cmap("viridis")
-    
-    fig, ax = plt.subplots(1, 2, 
+    fig, ax = plt.subplots(1, 2
                            #constrained_layout=True
                            )
     
-    ax[0].pie(rent_values, labels = rent_categories, autopct = "%1.0f%%", labeldistance = None, colors = sns.color_palette("viridis"), pctdistance = 1.15)
+    ax[0].pie(rent_values, labels = rent_categories, autopct = "%1.0f%%", labeldistance = None, 
+              colors = plt.colormaps["viridis"].resampled(len(rent_categories)).colors, # resample colormap to length of categories for column
+              pctdistance = 1.15 
+              )
     ax[0].set_title("Rent")
     
-    ax[1].pie(own_values, labels = own_categories, autopct = "%1.0f%%", labeldistance = None, colors = sns.color_palette("viridis"), pctdistance = 1.15)
+    ax[1].pie(own_values, labels = own_categories, autopct = "%1.0f%%", labeldistance = None, 
+              colors = plt.colormaps["viridis"].resampled(len(own_categories)).colors, # resample colormap to length of categories for column
+              pctdistance = 1.15
+              )
     ax[1].set_title("Own")
     
     handles, labels = ax[0].get_legend_handles_labels()
@@ -318,7 +357,6 @@ def pie_plotter(column, save_path=None):
 #%% create plots for each column and export
 
 # save as image to folder in cwd
-save_dir = r"home_demographics_30jan2024_plots"
 save_folder_counts = r"\own_rent_counts"
 save_folder_pie = r"\own_rent_pie"
 save_path_counts = os.path.join(path, save_dir + save_folder_counts)
@@ -431,27 +469,12 @@ descriptive_stats_rent_combined_df.insert(0, column = "Rent/Own", value = "Rent"
 descriptive_stats_own_combined_df = pd.concat([discrete_own_descriptive_stats_df, ordinal_own_descriptive_stats_df, nominal_own_descriptive_stats_df], axis = 1).T
 descriptive_stats_own_combined_df.insert(0, column = "Rent/Own", value = "Own")
 
-descriptive_stats_all_combined_df = pd.concat([descriptive_stats_rent_combined_df, descriptive_stats_own_combined_df], axis = 0)
+# combine rent and own into same df
+descriptive_stats_all_combined_df = pd.concat([descriptive_stats_rent_combined_df, descriptive_stats_own_combined_df], axis = 0).fillna("")
 
-#%% combine race counts into dictionary
-
-df_rent_races = df_rent.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
-df_rent_races.columns = [column.replace("race_", "") for column in df_rent_races.columns]
-df_rent_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
-
-df_own_races = df_own.loc[:, "race_americanindianoralaskannati" : "race_white"].drop(["race_prefernottosay"], axis = 1)
-df_own_races.columns = [column.replace("race_", "") for column in df_own_races.columns]
-df_own_races.rename( columns = {"otherpleasespecify": "other"}, inplace = True )
-
-rent_races_data_dict = {}
-for column_name in df_rent_races.columns:
-    column_counts = {column_name: sum(df_rent_races[f"{column_name}"])}
-    rent_races_data_dict[f"{column_name}"] = column_counts
-
-own_races_data_dict = {}
-for column_name in df_own_races.columns:
-    column_counts = {column_name: sum(df_own_races[f"{column_name}"])}
-    own_races_data_dict[f"{column_name}"] = column_counts
+# export combined df to csv
+save_path_stats = os.path.join(path, save_dir)
+descriptive_stats_all_combined_df.to_csv(os.path.join(save_path_stats, "own_rent_descriptive_stats.csv"))
 
 #%% chi** statistcal comparison of own vs. rent data
 
