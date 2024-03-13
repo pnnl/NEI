@@ -118,3 +118,40 @@ df_averaged_cz2 = df_full2.groupby('in.ashrae_iecc_climate_zone_2004')[numerical
 
 #copy to clipboard:
 df_averaged_cz2.to_clipboard(index=False, header=True)
+
+
+
+
+#import census data and PNNL datato find number of households per climate zone
+path_hh = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\CensusDemographicsAndHousing" 
+file_hh = r"households.counties.csv" 
+filepath_hh = os.path.join(path_hh, file_hh) 
+df_hh = pd.read_csv(filepath_hh) 
+
+
+df_hh = df_hh[df_hh["Unnamed: 2"] != "Percent"]
+df_hh.columns = ['county', 'state', 'unit', 'households']
+
+
+#counties and climate zones
+path_czc = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets" 
+file_czc = r"County Climate Regions BA and IECC DOE PNNL MC 2-18-2022_km_data_processing.csv" 
+filepath_czc = os.path.join(path_czc, file_czc) 
+df_czc = pd.read_csv(filepath_czc) 
+
+
+pattern = r'(.+?)\s*(County|Borough|Municipio|Municipality|Parish|Census Area|city|City and Borough)$'
+df_hh[['county1', 'countydes']] = df_hh['county'].str.extract(pattern, expand=True)
+
+
+# Adjust county1 and countydes based on the condition
+df_hh.loc[df_hh['countydes'] == 'city', 'county1'] = df_hh['county1'] + ' (city)'
+df_hh.loc[df_hh['countydes'] == 'city', 'countydes'] = 'city'
+
+df_hh.loc[df_hh['countydes'] == 'Census Area', 'county1'] = df_hh['county1'] + ' (CA)'
+df_hh.loc[df_hh['countydes'] == 'Census Area', 'countydes'] = 'Census Area'
+
+
+
+
+
