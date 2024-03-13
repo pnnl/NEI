@@ -19,6 +19,7 @@ import statsmodels.api as sm # for more advanced statistical testing
 import matplotlib.pyplot as plt # popular plotting library
 import seaborn as sns # wrapper for matplotlib to make plotting much easier
 from sklearn import linear_model # scikit-learn is a very useful machine learning library with many models built in
+from unidecode import unidecode
 #import torch # pytorch and tensorflow are both very powerful deep learning libraries for more advanced machine learning models
 #import tensorflow as tf # they currently do not work with the latest Python version however
 
@@ -131,6 +132,9 @@ df_hh = pd.read_csv(filepath_hh)
 
 df_hh = df_hh[df_hh["Unnamed: 2"] != "Percent"]
 df_hh.columns = ['county', 'state', 'unit', 'households']
+df_hh['state'] = df_hh['state'].str.strip()
+# Remove accents from strings in the 'county' column
+df_hh['county'] = df_hh['county'].apply(lambda x: unidecode(x))
 
 
 #counties and climate zones
@@ -151,7 +155,73 @@ df_hh.loc[df_hh['countydes'] == 'city', 'countydes'] = 'city'
 df_hh.loc[df_hh['countydes'] == 'Census Area', 'county1'] = df_hh['county1'] + ' (CA)'
 df_hh.loc[df_hh['countydes'] == 'Census Area', 'countydes'] = 'Census Area'
 
+#manually fix carson city, NV and DC
+df_hh.loc[(df_hh['county'] == 'Carson City') & (df_hh['state'] == 'Nevada'), 'county1'] = 'Carson City (city)'
+df_hh.loc[(df_hh['county'] == 'Carson City') & (df_hh['state'] == 'Nevada'), 'countydes'] = 'city'
 
+df_hh.loc[(df_hh['county'] == 'District of Columbia') & (df_hh['state'] == 'District of Columbia'), 'county1'] = 'District of Columbia'
+df_hh.loc[(df_hh['county'] == 'District of Columbia') & (df_hh['state'] == 'District of Columbia'), 'countydes'] = 'District'
+
+#Fix Misc differences
+df_hh.loc[(df_hh['county'] == 'De Baca County') & (df_hh['state'] == 'New Mexico'), 'county1'] = 'DeBaca'
+df_hh.loc[(df_hh['county'] == 'De Baca County') & (df_hh['state'] == 'New Mexico'), 'countydes'] = 'County'
+
+df_hh.loc[(df_hh['county'] == 'LaSalle Parish') & (df_hh['state'] == 'Louisiana'), 'county1'] = 'La Salle'
+df_hh.loc[(df_hh['county'] == 'LaSalle Parish') & (df_hh['state'] == 'Louisiana'), 'countydes'] = 'Parish'
+
+df_hh.loc[(df_hh['county'] == 'LaPorte County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'La Porte'
+df_hh.loc[(df_hh['county'] == 'LaPorte County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
+
+df_hh.loc[(df_hh['county'] == 'LaGrange County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'Lagrange'
+df_hh.loc[(df_hh['county'] == 'LaGrange County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
+
+df_hh.loc[(df_hh['county'] == 'DeKalb County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'De Kalb'
+df_hh.loc[(df_hh['county'] == 'DeKalb County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
+
+df_hh.loc[(df_hh['county'] == 'LaSalle County') & (df_hh['state'] == 'Illinois'), 'county1'] = 'La Salle'
+df_hh.loc[(df_hh['county'] == 'LaSalle County') & (df_hh['state'] == 'Illinois'), 'countydes'] = 'County'
+
+#Alaska modifications (need someone to double check assumptions here)
+df_hh.loc[(df_hh['county'] == 'Prince of Wales-Hyder Census Area') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Prince of Wales-Outer Ketchikan (CA)'
+df_hh.loc[(df_hh['county'] == 'Prince of Wales-Hyder Census Area') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area'
+
+df_hh.loc[(df_hh['county'] == 'Wrangell City and Borough') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Wrangell-Petersburg (CA)'
+df_hh.loc[(df_hh['county'] == 'Wrangell City and Borough') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. City and Borough'
+
+df_hh.loc[(df_hh['county'] == 'Petersburg Borough') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Wrangell-Petersburg (CA)'
+df_hh.loc[(df_hh['county'] == 'Petersburg Borough') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. Borough'
+
+df_hh.loc[(df_hh['county'] == 'Skagway Municipality') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Skagway-Hoonah-Angoon (CA)'
+df_hh.loc[(df_hh['county'] == 'Skagway Municipality') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. Municipality'
+
+df_hh.loc[(df_hh['county'] == 'Hoonah-Angoon Census Area') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Skagway-Hoonah-Angoon (CA)'
+df_hh.loc[(df_hh['county'] == 'Hoonah-Angoon Census Area') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area'
+
+
+
+# Create a dictionary mapping (county, state) to 'cz'
+cz_mapping = {(county, state): cz for county, state, cz in zip(df_czc['County'], df_czc['State'], df_czc['cz'])}
+
+# Use map to apply the mapping to create a new 'cz' column in df_hh
+df_hh['cz'] = df_hh.apply(lambda row: cz_mapping.get((row['county'], row['state']), 'None'), axis=1)
+
+
+
+cz_mapping = {(county, state): cz for county, state, cz in zip(df_czc['County'], df_czc['State'], df_czc['cz'])}
+
+# Use map to apply the mapping to create a new 'cz' column in df_hh
+df_hh['cz'] = df_hh.apply(lambda row: cz_mapping.get((row['county1'], row['state']), None), axis=1)
+
+
+
+# Group by 'cz' and calculate sum and count
+hh_per_cz = df_hh.groupby('cz').agg({'households': ['sum', 'count']}).reset_index()
+
+# Flatten the multi-index columns
+hh_per_cz.columns = ['cz', 'total_households', 'n_counties']
+
+
+sum_by_cz.to_clipboard(index=False, excel=True)
 
 
 
