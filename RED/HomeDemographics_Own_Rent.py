@@ -3,25 +3,38 @@ import os
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt
-import seaborn as sns
 import statistics as st
-from matplotlib.colors import LinearSegmentedColormap, Colormap
 
 #%% open data csv into dataframe, change default encoding
 
 # set check to make sure user directory is correct
-path = os.getcwd() # \User-Centered Research - General\clean data\
-file = r"home_demographics_30jan2024.csv"
+path = os.getcwd() # \User-Centered Research - General\clean data\UPGRADE-E Dataset
+file = r"home_demographics.csv"
 filepath = os.path.join(path, file)
 df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
 
 # set save path for exports
-save_dir = r"home_demographics_30jan2024_plots"
+save_dir = r"home_demographics_plots"
 
 #%% split data into renter vs. owner
 
 df_rent = df.loc[(df.loc[:, "own_rent"] == "Rent")]
 df_own = df.loc[(df.loc[:, "own_rent"] == "Own")]                               
+
+#%% open home_mods df and merge with home_demographics by PermNum
+
+df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
+df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
+df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
+
+#%% combine variables of like types together
+
+mods_list = [mod for mod in df_home_mods.columns if mod.split("_")[0] == "mod" and len(mod.split("_")) == 2] # get the main mod categories
+
+mod_cats = {mod: [ sub_mod for sub_mod in df_home_mods.columns if sub_mod.split("_")[0:2] == mod.split("_")[0:2] 
+                  and len(sub_mod.split("_")) > 2 ] for mod in mods_list} # group subcategories of each mod category
+
+factors_list = [fac for fac in df_home_mods.columns if fac.split("_")[0] == "fac"] # get list of factor categories
 
 #%% find the unique categories of each column, nans excluded
 
