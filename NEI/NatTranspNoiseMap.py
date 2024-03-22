@@ -2,6 +2,8 @@
 import os
 import geopandas as gpd
 import fiona as fi
+import cartopy
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 #%% open noise geodatabase into a geodataframe
@@ -30,8 +32,8 @@ for layer in layers:
     noise.plot(ax = ax, color = "green", alpha = 0.05, zorder = i) # plot layer ontop of map
     i += 1
 
-plt.show()
-plt.clf()
+#plt.show()
+#plt.clf()
 
 #%% plot an individual layer from the gdb
 
@@ -40,9 +42,36 @@ def plot_layer(layer=0):
     USA.plot(ax = ax, color = "white", edgecolor = "black", zorder = 0)
     layerx = gpd.read_file(gdb_path, driver = "FileGDB", layer = layer)
     layerx.plot(ax = ax, cmap = "Reds", alpha = 0.1)
-    plt.show()
-    plt.clf()
+    #plt.show()
+    #plt.clf()
 
 plot_layer(6)
 
 
+#%% try opening geodatabase with fiona
+
+with fi.open(gbd_filepath) as src:
+    crs = src.meta['crs'] # Get the coordinate reference system (CRS)
+    schema = src.schema # Get the metadata about the features
+    feature_list = [] # Create an empty list to store features
+    
+    for feat in src:
+        feature_list.append(feat) # Append each feature to the list
+        
+gdf = gpd.GeoDataFrame.from_features(feature_list) # Convert the list to a GeoDataFrame
+
+#%% create cartopy natural earth map projection of US
+
+projection = ccrs.AlbersEqualArea(central_longitude=-96, central_latitude=23)
+extent = [-125, -66.5, 20, 50]
+
+fig = plt.figure(figsize=[10, 6])
+ax = plt.axes([0, 0, 1, 1], projection=projection)
+ax.coastlines()
+ax.add_feature(cartopy.feature.LAND, facecolor='lightgray')
+ax.set_extent(extent)
+
+#%%
+
+gdf.geometry.boundary.plot(ax=ax, edgecolor='black', alpha=0.5)
+gdf[0]
