@@ -8,7 +8,7 @@ import statistics as st
 #%% open data csv into dataframe, change default encoding
 
 # set check to make sure user directory is correct
-path = os.getcwd() # \User-Centered Research - General\clean data\UPGRADE-E Dataset
+path = os.getcwd() # \User-Centered Research - General\clean data\UPGRADE-E Dataset\
 file = r"home_demographics.csv"
 filepath = os.path.join(path, file)
 df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
