@@ -7,8 +7,12 @@ import statistics as st
 
 #%% open data csv into dataframe, change default encoding
 
-# set check to make sure user directory is correct
+# check to make sure user working directory is correct
 path = os.getcwd() # \User-Centered Research - General\clean data\UPGRADE-E Dataset\
+current_location = path.split("\\")[-3:]
+assert current_location[-1] == "UPGRADE-E Dataset", "Set Spyder working directory to correct location."
+
+# set file path for dataset
 file = r"home_demographics.csv"
 filepath = os.path.join(path, file)
 df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
