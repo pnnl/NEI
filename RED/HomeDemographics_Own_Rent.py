@@ -22,23 +22,8 @@ save_dir = r"home_demographics_plots"
 
 #%% split data into renter vs. owner
 
-df_rent = df.loc[(df.loc[:, "own_rent"] == "Rent")]
-df_own = df.loc[(df.loc[:, "own_rent"] == "Own")]                               
-
-#%% open home_mods df and merge with home_demographics by PermNum
-
-df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
-df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
-df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
-
-#%% combine variables of like types together
-
-mods_list = [mod for mod in df_home_mods.columns if mod.split("_")[0] == "mod" and len(mod.split("_")) == 2] # get the main mod categories
-
-mod_cats = {mod: [ sub_mod for sub_mod in df_home_mods.columns if sub_mod.split("_")[0:2] == mod.split("_")[0:2] 
-                  and len(sub_mod.split("_")) > 2 ] for mod in mods_list} # group subcategories of each mod category
-
-factors_list = [fac for fac in df_home_mods.columns if fac.split("_")[0] == "fac"] # get list of factor categories
+df_rent = df.loc[ (df.loc[:, "own_rent"] == "Rent") ]
+df_own = df.loc[ (df.loc[:, "own_rent"] == "Own") ]                               
 
 #%% find the unique categories of each column, nans excluded
 
@@ -72,7 +57,6 @@ for column_name in df_rent_columns:
 # owners
 own_data_dict = {}
 for column_name in df_own_columns:
-    
     categories = own_column_categories.get(f"{column_name}")
     category_counts = {str(category): len(df_own.loc[(df_own.loc[:, f"{column_name}"] == category)]) for category in categories}
     own_data_dict[f"{column_name}"] = category_counts
@@ -260,6 +244,46 @@ own_data_dict["yrbuilt"] = {
     "1991-2010": 1825,
     "after 2010": 1061
     }
+
+
+#%% open home_mods df and merge with home_demographics by PermNum and own_rent columns
+
+df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
+df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
+df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
+
+#%% split home_mods dataset into renter vs. owner
+
+df_home_mods_rent = df_home_mods.loc[ (df_home_mods.loc[:, "own_rent"] == "Rent") ]
+df_home_mods_own = df_home_mods.loc[ (df_home_mods.loc[:, "own_rent"] == "Own") ]
+
+#%% combine variables of like types together
+
+mods_list = [mod for mod in df_home_mods.columns if mod.split("_")[0] == "mod" and len(mod.split("_")) == 2] # get the main mod categories
+
+mod_cats = {mod: { sub_mod for sub_mod in df_home_mods.columns if sub_mod.split("_")[0:2] == mod.split("_")[0:2] 
+                  and len(sub_mod.split("_")) > 2 } for mod in mods_list} # group subcategories of each mod category
+
+factors_list = [fac for fac in df_home_mods.columns if fac.split("_")[0] == "fac"] # get list of factor categories
+
+#%% create dict for each mod category and sum totals
+
+# renters
+rent_mod_cats_dict = {}
+for mod in mod_cats.keys():
+    sub_mods = mod_cats.get(f"{mod}")
+    sub_mods_totals = {sub_mod: sum(df_home_mods_rent[f"{sub_mod}"]) for sub_mod in sub_mods}
+    rent_mod_cats_dict[f"{mod}"] = sub_mods_totals
+
+# owners
+own_mod_cats_dict = {}
+for mod in mod_cats.keys():
+    sub_mods = mod_cats.get(f"{mod}")
+    sub_mods_totals = {sub_mod: sum(df_home_mods_own[f"{sub_mod}"]) for sub_mod in sub_mods}
+    own_mod_cats_dict[f"{mod}"] = sub_mods_totals
+
+# create dict for each factor category totals and append to mod dicts
+
 
 #%% function to plot renter vs. owner
 
