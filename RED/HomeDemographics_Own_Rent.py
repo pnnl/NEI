@@ -283,7 +283,15 @@ for mod in mod_cats.keys():
     own_mod_cats_dict[f"{mod}"] = sub_mods_totals
 
 # create dict for each factor category totals and append to mod dicts
+factors_rent = {fac: sum(df_home_mods_rent[f"{fac}"]) for fac in factors_list}
+rent_mod_cats_dict["factors"] = factors_rent
 
+factors_own = {fac: sum(df_home_mods_own[f"{fac}"]) for fac in factors_list}
+own_mod_cats_dict["factors"] = factors_own
+
+# append mod category dicts to data dicts
+rent_data_dict.update(rent_mod_cats_dict)
+own_data_dict.update(own_mod_cats_dict)
 
 #%% function to plot renter vs. owner
 
@@ -410,6 +418,10 @@ for column in all_columns:
     pie_plotter(f"{column}", save_path_pie)
 
 #%% stats
+
+#TODO
+# add auto data type detection
+# add count to descriptive stats
 
 # split data into discrete, ordinal, and nominal groups
 idx_dis = [0,1,2,9]
