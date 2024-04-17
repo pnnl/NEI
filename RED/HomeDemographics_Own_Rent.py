@@ -431,8 +431,6 @@ for column in all_columns:
 
 #TODO
 # add auto data type detection
-# add count to descriptive stats
-# add category for binary data
 
 # split data into discrete, ordinal, binary, and nominal groups
 idx_dis = [0,1,2,9]
@@ -457,18 +455,19 @@ def discrete_descriptive_stats(df, column):
     quartile_75 = np.quantile(df[f"{column}"], 0.75)
     max = np.max(df[f"{column}"])
     min = np.min(df[f"{column}"])
+    count = sum(df[f"{column}"])
     
-    return mode, max, quartile_75, median, quartile_25, min, average, stdev
+    return mode, max, quartile_75, median, quartile_25, min, average, stdev, count
 
-discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev"])
-discrete_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev",])
+discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev", "count"])
+discrete_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev", "count"])
 for column in discrete_categories:
     
-    mode, max, quartile_75, median, quartile_25, min, average, stdev = discrete_descriptive_stats(df_rent, column)
-    discrete_rent_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev]
+    mode, max, quartile_75, median, quartile_25, min, average, stdev, count = discrete_descriptive_stats(df_rent, column)
+    discrete_rent_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev, count]
     
-    mode, max, quartile_75, median, quartile_25, min, average, stdev = discrete_descriptive_stats(df_own, column)
-    discrete_own_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev]
+    mode, max, quartile_75, median, quartile_25, min, average, stdev, count = discrete_descriptive_stats(df_own, column)
+    discrete_own_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev, count]
 
 #%% run descriptive statistics on ordinal categorical and binned data
 
@@ -510,7 +509,17 @@ def binary_descriptive_stats(df, column):
     stdev = round(np.std(df[f"{column}"]), 2)
     count = sum(df[f"{column}"])
     
-    return 
+    return mode, average, stdev, count
+
+binary_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "average", "stdev", "count"])
+binary_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "average", "stdev", "count"])
+for column in binary_categories:
+    
+    mode, average, stdev, count = binary_descriptive_stats(df_rent, column)
+    binary_rent_descriptive_stats_df[f"{column}"] = [mode, average, stdev, count]
+    
+    mode, average, stdev, count = binary_descriptive_stats(df_own, column)
+    binary_own_descriptive_stats_df[f"{column}"] = [mode, average, stdev, count]
 
 #%% run descriptive statistics on nominal categorical data
 
@@ -540,10 +549,12 @@ for column in nominal_categories:
 #%% combine stats dfs into one df and export
 
 # add column for rent or own
-descriptive_stats_rent_combined_df = pd.concat([discrete_rent_descriptive_stats_df, ordinal_rent_descriptive_stats_df, nominal_rent_descriptive_stats_df], axis = 1).T
+descriptive_stats_rent_combined_df = pd.concat([discrete_rent_descriptive_stats_df, ordinal_rent_descriptive_stats_df, 
+                                                binary_rent_descriptive_stats_df, nominal_rent_descriptive_stats_df], axis = 1).T
 descriptive_stats_rent_combined_df.insert(0, column = "Rent/Own", value = "Rent")
 
-descriptive_stats_own_combined_df = pd.concat([discrete_own_descriptive_stats_df, ordinal_own_descriptive_stats_df, nominal_own_descriptive_stats_df], axis = 1).T
+descriptive_stats_own_combined_df = pd.concat([discrete_own_descriptive_stats_df, ordinal_own_descriptive_stats_df, 
+                                               binary_own_descriptive_stats_df, nominal_own_descriptive_stats_df], axis = 1).T
 descriptive_stats_own_combined_df.insert(0, column = "Rent/Own", value = "Own")
 
 # combine rent and own into same df

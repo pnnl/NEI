@@ -221,7 +221,7 @@ hh_per_cz = df_hh.groupby('cz').agg({'households': ['sum', 'count']}).reset_inde
 hh_per_cz.columns = ['cz', 'total_households', 'n_counties']
 
 
-sum_by_cz.to_clipboard(index=False, excel=True)
+hh_per_cz.to_clipboard(index=False, excel=True)
 
 
 
