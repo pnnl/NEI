@@ -10,7 +10,7 @@ import statistics as st
 # check to make sure user working directory is correct
 path = os.getcwd() # \User-Centered Research - General\clean data\UPGRADE-E Dataset\
 current_location = path.split("\\")[-3:]
-assert current_location[-1] == "UPGRADE-E Dataset", "Set Spyder working directory to correct location."
+assert current_location[-1] == "UPGRADE-E Dataset", "Set working directory to correct location."
 
 # set file path for dataset
 file = r"home_demographics.csv"
@@ -21,6 +21,13 @@ df = pd.read_csv(filepath, encoding = "cp1252") # change csv encoding type
 parent_dir = os.path.dirname(path)
 save_dir = r"home_demographics_plots"
 save_filepath = os.path.join(parent_dir, save_dir)
+
+#%% open home_mods df and merge with home_demographics by PermNum and own_rent columns
+
+df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
+df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
+#df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
+df = pd.merge(df, df_home_mods, on = "PermNum", how = "inner").dropna() # merge with demographics df by PermNum
 
 #%% split data into renter vs. owner
 
@@ -45,7 +52,9 @@ own_column_categories = {df_own_columns[i]:
                          for i in range(len(df_own_columns))
                          }
 
-all_columns = sorted(list(set(list(df_rent_columns) + list(df_own_columns)))) # create list of all columns together for later
+# create list of all columns together for later
+all_columns = list(df_rent_columns)
+all_columns.extend([col for col in df_own_columns if col not in all_columns])
 
 #%% create dict for each column and categories in df and count occurences
 
@@ -90,7 +99,7 @@ for column_name in df_own_races.columns:
 own_data_dict["races_all"] = own_races_all
 
 # add races_all to all_columns list
-all_columns.insert(22, "races_all")
+all_columns.insert(15, "races_all")
 
 #%% manually reorder ordinal categories that were sorted by string
 # treating "prefer not to say" as a NaN and removing
@@ -247,23 +256,10 @@ own_data_dict["yrbuilt"] = {
     "after 2010": 1061
     }
 
-
-#%% open home_mods df and merge with home_demographics by PermNum and own_rent columns
-
-#TODO
-# move df_home_mods to start and combine with df
-
-df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
-df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
-#df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
-df_home_mods = pd.merge(df, df_home_mods, on = "PermNum", how = "inner").dropna()
-
-#%% split home_mods dataset into renter vs. owner
-
-df_home_mods_rent = df_home_mods.loc[ (df_home_mods.loc[:, "own_rent"] == "Rent") ]
-df_home_mods_own = df_home_mods.loc[ (df_home_mods.loc[:, "own_rent"] == "Own") ]
-
 #%% combine variables of like types together
+
+# TODO
+# remove blocks for just mods
 
 mods_list = [mod for mod in df_home_mods.columns if mod.split("_")[0] == "mod" and len(mod.split("_")) == 2] # get the main mod categories
 
@@ -429,8 +425,9 @@ for column in all_columns:
 
 #%% stats
 
-#TODO
-# add auto data type detection
+# TODO
+# auto data type detection
+# indexes no longer match original sorting
 
 # split data into discrete, ordinal, binary, and nominal groups
 idx_dis = [0,1,2,9]
