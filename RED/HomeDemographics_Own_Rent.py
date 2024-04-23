@@ -101,160 +101,32 @@ own_data_dict["races_all"] = own_races_all
 # add races_all to all_columns list
 all_columns.insert(15, "races_all")
 
-#%% manually reorder ordinal categories that were sorted by string
+#%% manually reorder ordinal categories that were sorted by string and update data dicts
 # treating "prefer not to say" as a NaN and removing
 
-# rent
-
-rent_data_dict["education"] = {
-    "Some high school, no diploma": 147,
-    "High school diploma or GED": 1392,
-    "Associates degree or trade school": 645,
-    "Bachelor's degree": 399,
-    "Graduate or professional degree": 147
+ordinal_data_order = {
+    "education": ["Some high school, no diploma", "High school diploma or GED", "Associates degree or trade school", "Bachelor's degree", "Graduate or professional degree"],
+    "energyexpenses": ["Up to $25", "$26-$50", "$51-$100", "$101-$150", "$151-$200", "$201-$250", "$251-$300", "Greater than $300"],
+    "hhincome": ["0", "1-15,000", "15,001-30,000", "30,001-45,000", "45,001-60,000", "60,001-75,000", "75,001-100,000", "100,001-125,000", "125,001-150,000", "150,001-175,000", "175,001 or more"],
+    "homesqft": ["500 square feet or smaller", "501-1,000 square feet", "1,001-1,500 square feet", "1,501-2,000 square feet", "2,001-2,500 square feet", "2,501-3,000 square feet", "3,000 square feet or larger"],
+    "homeyrs": ["Less than 1 year", "1-3 years", "3-5 years", "5-10 years", "10 years or longer"],
+    "mortgagerentbins": ["$0-700", "$701-1,500", "$1,501-2,000", "$2,001-3,000", "$3,001-4,000", "$4,001-5,000", "$5,001-6,000", "$6,001-7,500", "$7,501-10,000", "Over $10,000"],
+    "reported_age": ["18-25", "26-35", "36-45", "46-55", "56-65", "65-70", "over 70"],
+    "yrbuilt": ["before 1900", "1901-1930", "1930-1959", "1960-1979", "1980-1990", "1991-2010", "after 2010"]
     }
 
-rent_data_dict["energyexpenses"] = {
-    "Up to $25": 57,
-    "$26-$50": 143,
-    "$51-$100": 422,
-    "$101-$150": 600,
-    "$151-$200": 550,
-    "$201-$250": 379,
-    "$251-$300": 290,
-    "Greater than $300": 315    
-    }
+def manually_reorder(dict, column, data_order=ordinal_data_order):
+    
+    order = data_order[column]
+    reordered_dict = {key: dict[column][key] for key in order}
+    
+    dict[column] = reordered_dict
+    
+    return reordered_dict
 
-rent_data_dict["hhincome"] = {
-    "0": 54,
-    "1-15,000": 456,
-    "15,001-30,000": 762,
-    "30,001-45,000": 534,
-    "45,001-60,000": 405,
-    "60,001-75,000": 203,
-    "75,001-100,000": 190,
-    "100,001-125,000": 76,
-    "125,001-150,000": 55,
-    "150,001-175,000": 65,
-    "175,001 or more": 40
-    }
-
-rent_data_dict["homesqft"] = {
-    "500 square feet or smaller": 110,
-    "501-1,000 square feet": 542,
-    "1,001-1,500 square feet": 688,
-    "1,501-2,000 square feet": 567,
-    "2,001-2,500 square feet": 346,
-    "2,501-3,000 square feet": 163,
-    "3,000 square feet or larger": 64
-    }
-
-rent_data_dict["homeyrs"] = {
-    "Less than 1 year": 402,
-    "1-3 years": 1000,
-    "3-5 years": 666,
-    "5-10 years": 520,
-    "10 years or longer": 306
-    }
-
-rent_data_dict["mortgagerentbins"] = {
-    "$0-700": 1069,
-    "$701-1,500": 1285,
-    "$1,501-2,000": 238,
-    "$2,001-3,000": 156,
-    "$3,001-4,000": 36,
-    "$4,001-5,000": 26,
-    "$5,001-6,000": 22,
-    "$6,001-7,500": 17,
-    "$7,501-10,000": 7,
-    "Over $10,000": 5
-    }
-
-rent_data_dict["yrbuilt"] = {
-    "before 1900": 49,
-    "1901-1930": 148,
-    "1930-1959": 357,
-    "1960-1979": 598,
-    "1980-1990": 475,
-    "1991-2010": 447,
-    "after 2010": 221    
-    }
-
-# own
-
-own_data_dict["education"] = {
-    "Some high school, no diploma": 113,
-    "High school diploma or GED": 1790,
-    "Associates degree or trade school": 1542,
-    "Bachelor's degree": 1828,
-    "Graduate or professional degree": 1296
-    }
-
-own_data_dict["energyexpenses"] = {
-    "Up to $25": 41,
-    "$26-$50": 138,
-    "$51-$100": 740,
-    "$101-$150": 1352,
-    "$151-$200": 1545,
-    "$201-$250": 1184,
-    "$251-$300": 903,
-    "Greater than $300": 743
-    }
-
-own_data_dict["hhincome"] = {
-    "0": 39,
-    "1-15,000": 300,
-    "15,001-30,000": 740,
-    "30,001-45,000": 862,
-    "45,001-60,000": 961,
-    "60,001-75,000": 738,
-    "75,001-100,000": 1034,
-    "100,001-125,000": 637,
-    "125,001-150,000": 569,
-    "150,001-175,000": 404,
-    "175,001 or more": 510
-    }
-
-own_data_dict["homesqft"] = {
-    "500 square feet or smaller": 73,
-    "501-1,000 square feet": 441,
-    "1,001-1,500 square feet": 1389,
-    "1,501-2,000 square feet": 1889,
-    "2,001-2,500 square feet": 1523,
-    "2,501-3,000 square feet": 830,
-    "3,000 square feet or larger": 531
-    }
-
-own_data_dict["homeyrs"] = {
-    "Less than 1 year": 236,
-    "1-3 years": 873,
-    "3-5 years": 1144,
-    "5-10 years": 1394,
-    "10 years or longer": 3346
-    }
-
-own_data_dict["mortgagerentbins"] = {
-    "$0-700": 2433,
-    "$701-1,500": 2077,
-    "$1,501-2,000": 800,
-    "$2,001-3,000": 642,
-    "$3,001-4,000": 180,
-    "$4,001-5,000": 113,
-    "$5,001-6,000": 114,
-    "$6,001-7,500": 77,
-    "$7,501-10,000": 56,
-    "Over $10,000": 71
-    }
-
-own_data_dict["yrbuilt"] = {
-    "before 1900": 169 ,
-    "1901-1930": 316,
-    "1930-1959": 901,
-    "1960-1979": 1337,
-    "1980-1990": 1113,
-    "1991-2010": 1825,
-    "after 2010": 1061
-    }
+for col in ordinal_data_order.keys():
+    manually_reorder(rent_data_dict, col)
+    manually_reorder(own_data_dict, col)
 
 #%% combine variables of like types together
 
@@ -425,20 +297,28 @@ for column in all_columns:
 
 #%% stats
 
-# TODO
-# auto data type detection
-# indexes no longer match original sorting
+#%% auto detect data type of each column
 
-# split data into discrete, ordinal, binary, and nominal groups
-idx_dis = [0,1,2,9]
-idx_ord = [3,5,10,11,13,14,23,26]
-idx_bin = [i for i in range(15, 22)] + [i for i in range(27, 38)]
-idx_nom = [i for i in range(len(all_columns)) if i not in idx_dis + idx_ord + idx_bin]
+def auto_data_type(df, column):
+    
+    column_cats = df[column].unique()
+    data_types = [type(cat) for cat in column_cats]
+    
+    if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
+        data_type = "Binary"
+    elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
+        data_type = "Numeric"
+    elif str in data_types and column in ordinal_data_order.keys():
+        data_type = "Ordinal"
+    else:
+        data_type = "Nominal"
+    
+    return data_type
+    
+d_type = auto_data_type(df, "education")
+print(d_type)
 
-discrete_categories = [all_columns[idx] for idx in idx_dis]
-ordinal_categories = [all_columns[idx] for idx in idx_ord]
-binary_categories = [all_columns[idx] for idx in idx_bin]
-nominal_categories = [all_columns[idx] for idx in idx_nom]
+# assign each column to a data type list
 
 #%% run descriptive statistics on discrete numerical data
 
