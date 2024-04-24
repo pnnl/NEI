@@ -301,24 +301,47 @@ for column in all_columns:
 
 def auto_data_type(df, column):
     
-    column_cats = df[column].unique()
-    data_types = [type(cat) for cat in column_cats]
+    try:
+        
+        if isinstance(df, pd.DataFrame):
+            
+            column_cats = df[column].unique()
+            data_types = [type(cat) for cat in column_cats]
+        
+            if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
+                data_type = "Binary"
+            elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
+                data_type = "Numeric"
+            elif str in data_types and column in ordinal_data_order.keys():
+                data_type = "Ordinal"
+            else:
+                data_type = "Nominal"
+        
+        elif isinstance(df, dict):
+            
+            column_cats = [key for key in rent_data_dict[column].keys()]
+            data_types = [type(cat) for cat in column_cats]
+            
+            if any([cat.isnumeric() for cat in column_cats]) and len(column_cats) <= 2:
+                data_type = "Binary"
+            elif  any([cat.isnumeric() for cat in column_cats]) and len(column_cats) > 2:
+                data_type = "Numeric"
+            elif str in data_types and column in ordinal_data_order.keys():
+                data_type = "Ordinal"
+            else:
+                data_type = "Nominal"
+        
+        return data_type
     
-    if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
-        data_type = "Binary"
-    elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
-        data_type = "Numeric"
-    elif str in data_types and column in ordinal_data_order.keys():
-        data_type = "Ordinal"
-    else:
-        data_type = "Nominal"
-    
-    return data_type
-    
-d_type = auto_data_type(df, "education")
-print(d_type)
+    except:
+        print("Data type not supported; function only works with DataFrame or dict")
 
-# assign each column to a data type list
+#%% assign each column to a data type list
+
+for col in all_columns:
+    d_type = auto_data_type(rent_data_dict, col)
+    d_type_dict = {col: d_type for col in all_columns}
+    
 
 #%% run descriptive statistics on discrete numerical data
 
