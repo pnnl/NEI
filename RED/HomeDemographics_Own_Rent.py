@@ -301,47 +301,47 @@ for column in all_columns:
 
 def auto_data_type(df, column):
     
-    try:
-        
-        if isinstance(df, pd.DataFrame):
-            
-            column_cats = df[column].unique()
-            data_types = [type(cat) for cat in column_cats]
-        
-            if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
-                data_type = "Binary"
-            elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
-                data_type = "Numeric"
-            elif str in data_types and column in ordinal_data_order.keys():
-                data_type = "Ordinal"
-            else:
-                data_type = "Nominal"
-        
-        elif isinstance(df, dict):
-            
-            column_cats = [key for key in rent_data_dict[column].keys()]
-            data_types = [type(cat) for cat in column_cats]
-            
-            if any([cat.isnumeric() for cat in column_cats]) and len(column_cats) <= 2:
-                data_type = "Binary"
-            elif  any([cat.isnumeric() for cat in column_cats]) and len(column_cats) > 2:
-                data_type = "Numeric"
-            elif str in data_types and column in ordinal_data_order.keys():
-                data_type = "Ordinal"
-            else:
-                data_type = "Nominal"
-        
-        return data_type
+    if not isinstance(df, (pd.DataFrame, dict)):
+        raise TypeError("Data type not supported; function only works with DataFrame or dict")
     
-    except:
-        print("Data type not supported; function only works with DataFrame or dict")
-
+    if isinstance(df, pd.DataFrame):
+        
+        column_cats = df[column].unique()
+        data_types = [type(cat) for cat in column_cats]
+    
+        if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
+            data_type = "Binary"
+        elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
+            data_type = "Numeric"
+        elif str in data_types and column in ordinal_data_order.keys():
+            data_type = "Ordinal"
+        else:
+            data_type = "Nominal"
+    
+    elif isinstance(df, dict):
+        
+        column_cats = [key for key in rent_data_dict[column].keys()]
+        data_types = [type(cat) for cat in column_cats]
+        
+        if all([cat.isnumeric() for cat in column_cats]) and len(column_cats) <= 2:
+            data_type = "Binary"
+        elif  all([cat.isnumeric() for cat in column_cats]) and len(column_cats) > 2:
+            data_type = "Numeric"
+        elif str in data_types and column in ordinal_data_order.keys():
+            data_type = "Ordinal"
+        else:
+            data_type = "Nominal"
+    
+    return data_type
+    
 #%% assign each column to a data type list
 
-for col in all_columns:
-    d_type = auto_data_type(rent_data_dict, col)
-    d_type_dict = {col: d_type for col in all_columns}
-    
+d_type_dict = {col: auto_data_type(rent_data_dict, col) for col in all_columns}
+
+binary_categories = [key for key, val in d_type_dict.items() if val == "Binary"]
+numeric_categories = [key for key, val in d_type_dict.items() if val == "Numeric"] 
+ordinal_categories = [key for key, val in d_type_dict.items() if val == "Ordinal"]
+nominal_categories = [key for key, val in d_type_dict.items() if val == "Nominal"]
 
 #%% run descriptive statistics on discrete numerical data
 
@@ -361,7 +361,7 @@ def discrete_descriptive_stats(df, column):
 
 discrete_rent_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev", "count"])
 discrete_own_descriptive_stats_df = pd.DataFrame(index = ["mode", "max", "quartile_75", "median", "quartile_25", "min", "average", "stdev", "count"])
-for column in discrete_categories:
+for column in numeric_categories:
     
     mode, max, quartile_75, median, quartile_25, min, average, stdev, count = discrete_descriptive_stats(df_rent, column)
     discrete_rent_descriptive_stats_df[f"{column}"] = [mode, max, quartile_75, median, quartile_25, min, average, stdev, count]
