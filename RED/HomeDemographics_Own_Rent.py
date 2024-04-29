@@ -26,7 +26,6 @@ save_filepath = os.path.join(parent_dir, save_dir)
 
 df_home_mods = pd.read_csv(os.path.join(path, "home_mods.csv"))
 df_home_mods.replace(999, pd.NA, inplace = True) # replace 999 with nan for removal
-#df_home_mods = pd.merge(df[["PermNum", "own_rent"]], df_home_mods, on = "PermNum", how = "inner").dropna() # merge with own_rent column by PermNum
 df = pd.merge(df, df_home_mods, on = "PermNum", how = "inner").dropna() # merge with demographics df by PermNum
 
 #%% split data into renter vs. owner
@@ -127,49 +126,6 @@ def manually_reorder(dict, column, data_order=ordinal_data_order):
 for col in ordinal_data_order.keys():
     manually_reorder(rent_data_dict, col)
     manually_reorder(own_data_dict, col)
-
-#%% combine variables of like types together
-
-# TODO
-# remove blocks for just mods
-
-mods_list = [mod for mod in df_home_mods.columns if mod.split("_")[0] == "mod" and len(mod.split("_")) == 2] # get the main mod categories
-
-# group subcategories of each mod category
-mod_cats = {mod: { sub_mod for sub_mod in df_home_mods.columns if sub_mod.split("_")[0:2] == mod.split("_")[0:2] } for mod in mods_list}
-
-factors_list = [fac for fac in df_home_mods.columns if fac.split("_")[0] == "fac"] # get list of factor categories
-
-mods_list.extend(["factors"])
-all_columns.extend(mods_list)
-
-#%% create dict for each mod category and sum totals
-
-# renters
-rent_mod_cats_dict = {}
-for mod in mod_cats.keys():
-    
-    sub_mods = mod_cats.get(f"{mod}")
-    sub_mods_totals = {sub_mod: sum(df_home_mods_rent[f"{sub_mod}"]) for sub_mod in sub_mods}
-    rent_mod_cats_dict[f"{mod}"] = sub_mods_totals
-
-# owners
-own_mod_cats_dict = {}
-for mod in mod_cats.keys():
-    sub_mods = mod_cats.get(f"{mod}")
-    sub_mods_totals = {sub_mod: sum(df_home_mods_own[f"{sub_mod}"]) for sub_mod in sub_mods}
-    own_mod_cats_dict[f"{mod}"] = sub_mods_totals
-
-# create dict for each factor category totals and append to mod dicts
-factors_rent = {fac: sum(df_home_mods_rent[f"{fac}"]) for fac in factors_list}
-rent_mod_cats_dict["factors"] = factors_rent
-
-factors_own = {fac: sum(df_home_mods_own[f"{fac}"]) for fac in factors_list}
-own_mod_cats_dict["factors"] = factors_own
-
-# append mod category dicts to data dicts
-rent_data_dict.update(rent_mod_cats_dict)
-own_data_dict.update(own_mod_cats_dict)
 
 #%% function to plot renter vs. owner
 
@@ -461,9 +417,5 @@ descriptive_stats_own_combined_df.insert(0, column = "Rent/Own", value = "Own")
 descriptive_stats_all_combined_df = pd.concat([descriptive_stats_rent_combined_df, descriptive_stats_own_combined_df], axis = 0).fillna("")
 
 # export combined df to csv
-save_path_stats = os.path.join(path, save_dir)
+save_path_stats = os.path.join(path, save_filepath)
 descriptive_stats_all_combined_df.to_csv(os.path.join(save_path_stats, "own_rent_descriptive_stats.csv"))
-
-#%% chi** statistcal comparison of own vs. rent data
-
-
