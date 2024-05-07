@@ -125,7 +125,7 @@ def manually_reorder(dict, column, data_order=ordinal_data_order):
 
 for col in ordinal_data_order.keys():
     manually_reorder(rent_data_dict, col)
-    manually_reorder(own_data_dict, col)
+    manually_reorder(own_data_dict, col)    
 
 #%% function to plot renter vs. owner
 
@@ -276,7 +276,7 @@ def auto_data_type(df, column):
     
     elif isinstance(df, dict):
         
-        column_cats = [key for key in rent_data_dict[column].keys()]
+        column_cats = [key for key in df[column].keys()]
         data_types = [type(cat) for cat in column_cats]
         
         if all([cat.isnumeric() for cat in column_cats]) and len(column_cats) <= 2:
