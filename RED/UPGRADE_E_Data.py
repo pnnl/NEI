@@ -74,10 +74,8 @@ def auto_data_typer(df, column):
         column_cats = df[column].unique()[ ~pd.isnull(df[column].unique()) ]
         data_types = [type(cat) for cat in column_cats]
     
-        #if np.issubdtype(column_cats.dtype, np.number) and len(column_cats) <= 2:
         if all([isinstance(cat, (int, np.integer)) for cat in column_cats]) and len(column_cats) <= 2:
             data_type = "Binary"
-        #elif np.issubdtype(column_cats.dtype, np.number) and len(column_cats) > 2:
         elif all([isinstance(cat, (int, np.integer)) for cat in column_cats]) and len(column_cats) > 2:
             data_type = "Numeric"
         elif str in data_types and column in ordinal_data_order.keys():
@@ -89,14 +87,11 @@ def auto_data_typer(df, column):
     
     elif isinstance(df, dict):
         
-        #column_cats = [key for key in df[column].keys()]
         column_cats = df[column]
         data_types = [type(cat) for cat in column_cats]
         
-        #if all([cat.isnumeric() for cat in column_cats]) and len(column_cats) <= 2:
         if all([isinstance(cat, (int, np.integer)) for cat in column_cats]) and len(column_cats) <= 2:
             data_type = "Binary"
-        #elif all([cat.isnumeric() for cat in column_cats]) and len(column_cats) > 2:
         elif all([isinstance(cat, (int, np.integer)) for cat in column_cats]) and len(column_cats) > 2:
             data_type = "Numeric"
         elif str in data_types and column in ordinal_data_order.keys():
@@ -173,7 +168,7 @@ def data_counts(df, column_categories_dict):
     
     data_dict = {}
     for column_name in column_categories_dict.keys():
-        categories = sorted(column_categories_dict.get(f"{column_name}"))
+        categories = column_categories_dict.get(f"{column_name}")
         category_counts = {str(category): len(df.loc[(df.loc[:, f"{column_name}"] == category)]) for category in categories}
         data_dict[f"{column_name}"] = category_counts
 
@@ -302,6 +297,6 @@ def pie_plotter(data_groups_dicts, column, save_path=None):
     
     return None
 
-#%% integrate with D3.js
+#%%
 
 
