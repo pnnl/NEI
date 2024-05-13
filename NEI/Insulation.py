@@ -42,37 +42,37 @@ file2 = r"upgrade02_metadata_and_annual_results.csv" # if you set your current f
 filepath2 = os.path.join(path, file2) # add the file to the folder path
 df2 = pd.read_csv(filepath2) 
 
-file3 = r"upgrade03_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath3 = os.path.join(path, file3) # add the file to the folder path
-df3 = pd.read_csv(filepath3) 
+#file3 = r"upgrade03_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath3 = os.path.join(path, file3) # add the file to the folder path
+#df3 = pd.read_csv(filepath3) 
 
-file4 = r"upgrade04_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath4 = os.path.join(path, file4) # add the file to the folder path
-df4 = pd.read_csv(filepath4) 
+#file4 = r"upgrade04_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath4 = os.path.join(path, file4) # add the file to the folder path
+#df4 = pd.read_csv(filepath4) 
 
-file5 = r"upgrade05_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath5 = os.path.join(path, file5) # add the file to the folder path
-df5 = pd.read_csv(filepath5) 
+#file5 = r"upgrade05_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath5 = os.path.join(path, file5) # add the file to the folder path
+#df5 = pd.read_csv(filepath5) 
 
-file6 = r"upgrade06_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath6 = os.path.join(path, file6) # add the file to the folder path
-df6 = pd.read_csv(filepath6) 
+#file6 = r"upgrade06_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath6 = os.path.join(path, file6) # add the file to the folder path
+#df6 = pd.read_csv(filepath6) 
 
-file7 = r"upgrade07_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath7 = os.path.join(path, file7) # add the file to the folder path
-df7 = pd.read_csv(filepath7) 
+#file7 = r"upgrade07_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath7 = os.path.join(path, file7) # add the file to the folder path
+#df7 = pd.read_csv(filepath7) 
 
-file8 = r"upgrade08_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath8 = os.path.join(path, file8) # add the file to the folder path
-df8 = pd.read_csv(filepath8) 
+#file8 = r"upgrade08_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath8 = os.path.join(path, file8) # add the file to the folder path
+#df8 = pd.read_csv(filepath8) 
 
-file9 = r"upgrade09_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath9 = os.path.join(path, file9) # add the file to the folder path
-df9 = pd.read_csv(filepath9) 
+#file9 = r"upgrade09_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath9 = os.path.join(path, file9) # add the file to the folder path
+#df9 = pd.read_csv(filepath9) 
 
-file10 = r"upgrade10_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
-filepath10 = os.path.join(path, file10) # add the file to the folder path
-df10 = pd.read_csv(filepath10) 
+#file10 = r"upgrade10_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
+#filepath10 = os.path.join(path, file10) # add the file to the folder path
+#df10 = pd.read_csv(filepath10) 
 
 
 #Now get the info you need from each
