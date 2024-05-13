@@ -29,7 +29,7 @@ from unidecode import unidecode
 username = os.getlogin() # get your active username
 share_path = fr"C:\Users\{username}\\" # insert your username in the file path
 
-path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock" #os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
+path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock\2022" #os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
 file = r"baseline_metadata_and_annual_results.csv" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
 filepath = os.path.join(path, file) # add the file to the folder path
 df0 = pd.read_csv(filepath) # read the file at the speicifed filepath into a pandas dataframe
