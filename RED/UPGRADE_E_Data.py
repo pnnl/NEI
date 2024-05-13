@@ -55,7 +55,7 @@ def merge_datasets(datasets, path):
         
         filepath = os.path.join(path, dataset)
         df = pd.read_csv(filepath, encoding = "cp1252")
-        df.replace(999, pd.NA, inplace = True)
+        df.replace([999, "999", 777, "777", "Prefer not to say"], pd.NA, inplace = True)
         dfs.append(df)
     
     df_merged = reduce(lambda left, right: pd.merge(left, right, on = "PermNum", how = "inner"), dfs)
@@ -151,16 +151,24 @@ def manually_reorder(dict, data_order=ordinal_data_order):
 
 #%% select how to compare data, e.g. by column category, region, or as a whole
 
-def split_data(df, column):
+def split_data(df, group_by_column):
     
-    df_groups = df.groupby(column)
+    df_groups = df.groupby(group_by_column)
     
     groups = {}
     for group_name, group_df in df_groups:
         group = df_groups.get_group(f"{group_name}")
         groups[group_name] = group
 
-    return groups
+    reordered_groups = {}
+    if group_by_column in ordinal_data_order.keys():
+        for key in ordinal_data_order[group_by_column]:
+            reordered_groups[key] = groups[key]
+        
+        return reordered_groups
+        
+    else:
+        return groups
 
 #%% create dict for each column and categories in df and count occurences
 
@@ -168,9 +176,9 @@ def data_counts(df, column_categories_dict):
     
     data_dict = {}
     for column_name in column_categories_dict.keys():
-        categories = column_categories_dict.get(f"{column_name}")
-        category_counts = {str(category): len(df.loc[(df.loc[:, f"{column_name}"] == category)]) for category in categories}
-        data_dict[f"{column_name}"] = category_counts
+        categories = column_categories_dict.get(column_name)
+        category_counts = {str(category): len(df.loc[(df.loc[:, column_name] == category)]) for category in categories}
+        data_dict[column_name] = category_counts
 
     return data_dict
 
@@ -250,51 +258,61 @@ def bar_plotter(column, save_path=None):
 #%% function to plot pie graphs comparing groups of data
 
 # compare data groups side by side
-def pie_plotter(data_groups_dicts, column, save_path=None):
+import math
+from collections import OrderedDict
 
+def pie_plotter(data_groups_dicts, column, group_by_column, save_path=None):
+    
     data_groups = list(data_groups_dicts.keys())
-    
-    group_1_categories = data_groups_dicts[data_groups[0]][column].keys()
-    group_1_values = data_groups_dicts[data_groups[0]][column].values()
-    
-    group_2_categories = data_groups_dicts[data_groups[1]][column].keys()
-    group_2_values = data_groups_dicts[data_groups[1]][column].values()
-    
-    plt.rc("font", size = 7)
-    plt.rc("axes", titlesize = 9)
-    
-    fig, ax = plt.subplots(1, 2
-                           #constrained_layout=True
-                           )
-    
-    ax[0].pie(group_1_values, labels = group_1_categories, autopct = "%1.0f%%", labeldistance = None, 
-              colors = plt.colormaps["viridis"].resampled(len(group_1_categories)).colors, # resample colormap to length of categories for column
-              pctdistance = 1.15 
-              )
-    ax[0].set_title(data_groups[0])
-    
-    ax[1].pie(group_2_values, labels = group_2_categories, autopct = "%1.0f%%", labeldistance = None, 
-              colors = plt.colormaps["viridis"].resampled(len(group_2_categories)).colors, # resample colormap to length of categories for column
-              pctdistance = 1.15
-              )
-    ax[1].set_title(data_groups[1])
-    
-    handles, labels = ax[0].get_legend_handles_labels()
-    handles += ax[1].get_legend_handles_labels()[0]
-    labels_1 = ax[1].get_legend_handles_labels()[1]
-    for label in labels_1:
-        if label not in labels:
-            labels += label
+    num_groups = len(data_groups)
 
-    fig.suptitle(f"Column: {column}", fontsize = 10)
-    fig.legend(loc = "lower center", labels = labels)
-    
-    if save_path != None:
-        #fig.tight_layout()
-        plt.savefig(os.path.join(save_path, f"{column}_own_rent_pie.png"),
-                    dpi = 300
-                    )
-    
+    # calculate the number of rows and columns for subplots
+    num_rows = math.ceil(num_groups / 3)
+    num_cols = min(num_groups, 3)
+
+    # create a figure and axis objects for subplots
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(num_cols * 5, num_rows * 4))
+    if num_groups == 1:
+        axes = [axes]  # ensure axes is a list for the single subplot case
+    else:
+        axes = axes.ravel()  # flatten the axes array
+
+    plt.rc("font", size=7)
+    plt.rc("axes", titlesize=9)
+
+    unique_labels = OrderedDict()
+    handles = []
+
+    for i, group in enumerate(data_groups):
+        categories = data_groups_dicts[group][column].keys()
+        values = data_groups_dicts[group][column].values()
+
+        ax = axes[i]
+        wedges, texts, autotexts = ax.pie(
+            values,
+            labels=categories,
+            autopct="%1.0f%%",
+            labeldistance=None,
+            colors=plt.colormaps["viridis"].resampled(len(categories)).colors,  # resample colormap to length of categories for column
+            pctdistance=1.15,
+        )
+        ax.set_title(group)
+
+        # get legend handles and labels for the current subplot
+        subplot_handles, subplot_labels = ax.get_legend_handles_labels()
+        handles.extend([h for h, l in zip(subplot_handles, subplot_labels) if l not in unique_labels])
+        unique_labels.update((l, None) for l in subplot_labels if l not in unique_labels)
+
+    # remove any unused axes
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
+
+    fig.suptitle(f"Group: {group_by_column} \n Column: {column}", fontsize=10)
+    fig.legend(handles, list(unique_labels.keys()), loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
+
+    if save_path is not None:
+        plt.savefig(os.path.join(save_path, f"{column}_pie.png"), dpi=300, bbox_inches="tight")
+
     return None
 
 #%%
