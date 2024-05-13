@@ -49,8 +49,8 @@ for column in df0.columns:
 
 
 # Creating a new DataFrame with the selected columns
-df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
-df1_new = pd.DataFrame(df1.loc[:, "bldg_id":"upgrade"].join(df1.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
+df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.site_energy.total.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
+df1_new = pd.DataFrame(df1.loc[:, "bldg_id":"upgrade"].join(df1.loc[:, "out.site_energy.total.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
 
 
 df_diff = df1_new - df0_new
@@ -72,7 +72,7 @@ df_averaged_cz.to_clipboard(index=False, header=True)
 
 ##Do the same comparison now with Envelope Upgrade option 2
 # Creating a new DataFrame with the selected columns
-df2_new = pd.DataFrame(df2.loc[:, "bldg_id":"upgrade"].join(df2.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
+df2_new = pd.DataFrame(df2.loc[:, "bldg_id":"upgrade"].join(df2.loc[:, "out.site_energy.total.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
 
 
 df_diff2 = df2_new - df0_new
