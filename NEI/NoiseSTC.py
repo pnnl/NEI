@@ -62,12 +62,12 @@ for column in df0.columns:
 # Creating a new DataFrame with the selected columns
 #df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.emissions.all_fuels.lrmer_high_re_cost_2030_boxavg.co2e_kg":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
 
-df0 = df0[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.windows', 'in.county']]
-df1 = df1[['upgrade', 'in.sqft', 'weight', 'in.windows', 'in.county']]
-df2 = df2[['upgrade', 'in.sqft', 'weight', 'in.windows', 'in.county']]
-df3 = df3[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df4 = df4[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df5 = df5[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df0 = df0[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.windows', 'in.county']]
+df1 = df1[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county']]
+df2 = df2[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county']]
+df3 = df3[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df4 = df4[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df5 = df5[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
 
 data_ins = {
     'in.insulation_wall_match': [
@@ -119,172 +119,46 @@ data_windows = {
 df_windows = pd.DataFrame(data_windows)
 
 
-
+df1['in.windows_upgrade'] = 'Triple, Low-E, Non-metal, Air, L-Gain'
 # Add the STC column to df0
 df0 = df0.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
 # Add the STC column to df1
-df1 = df1.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
+df1 = df1.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows_upgrade', right_on='in.windows_match').drop(columns='in.windows_match')
+
+df1['STC_diff'] = df1['STC'] - df0['STC']
+df1['STC_diff'].mean()
+df1['STC_new'] = df1['STC']+df1['STC_diff']
+#avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004')['STC_new'].mean().reset_index()
+avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC': 'mean', 'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+
+# Rename the columns for clarity
+avg_stc_by_cz.columns = ['Climate Zone', 'Average STC', 'Average STC_diff', 'Average STC_new']
+print(avg_stc_by_cz)
+
 # Add the STC column to df2
 df2 = df2.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
 
 
-df1['STC_delta'] = df1['STC'] - df0['STC']
-df2['STC_delta'] = df2['STC'] - df0['STC']
 
 
+df2['STC_diff'] = df2['STC'] - df0['STC']
 
-df1['STC_delta'].mean()
-df2['STC_delta'].mean()
 
 
 
+df2['STC_diff'].mean()
 
 
 
-
-
-df_diff = df1_new - df0_new
-df_metadata = df0[['bldg_id', 'in.sqft', 'weight', 'in.ashrae_iecc_climate_zone_2004', 'in.census_division', 'in.census_region', 'in.county']]
-
-df_full = pd.concat([df_metadata,df_diff], axis=1)
-
-
-
-
-
-
-
-
-# Select numerical columns excluding the specific non-numerical or grouping column
-numerical_cols = df_full.select_dtypes(include=[np.number]).columns.drop('in.ashrae_iecc_climate_zone_2004', errors='ignore')
-
-df_averaged_cz = df_full.groupby('in.ashrae_iecc_climate_zone_2004')[numerical_cols].mean().reset_index()
-
-#copy to clipboard:
-df_averaged_cz.to_clipboard(index=False, header=True)
-
-
-
-##Do the same comparison now with Envelope Upgrade option 2
-# Creating a new DataFrame with the selected columns
-df2_new = pd.DataFrame(df2.loc[:, "bldg_id":"upgrade"].join(df2.loc[:, "out.site_energy.net.energy_consumption.kwh":"out.emissions.all_fuels.lrmer_mid_case_15_2025_start.co2e_kg"]))
-
-
-df_diff2 = df2_new - df0_new
-
-df_full2 = pd.concat([df_metadata,df_diff2], axis=1)
-
-
-# Select numerical columns excluding the specific non-numerical or grouping column
-numerical_cols2 = df_full2.select_dtypes(include=[np.number]).columns.drop('in.ashrae_iecc_climate_zone_2004', errors='ignore')
-
-df_averaged_cz2 = df_full2.groupby('in.ashrae_iecc_climate_zone_2004')[numerical_cols].mean().reset_index()
-
-#copy to clipboard:
-df_averaged_cz2.to_clipboard(index=False, header=True)
-
-
-
-
-#import census data and PNNL datato find number of households per climate zone
-path_hh = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\CensusDemographicsAndHousing" 
-file_hh = r"households.counties.csv" 
-filepath_hh = os.path.join(path_hh, file_hh) 
-df_hh = pd.read_csv(filepath_hh) 
-
-
-df_hh = df_hh[df_hh["Unnamed: 2"] != "Percent"]
-df_hh.columns = ['county', 'state', 'unit', 'households']
-df_hh['state'] = df_hh['state'].str.strip()
-# Remove accents from strings in the 'county' column
-df_hh['county'] = df_hh['county'].apply(lambda x: unidecode(x))
-
-
-#counties and climate zones
-path_czc = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets" 
-file_czc = r"County Climate Regions BA and IECC DOE PNNL MC 2-18-2022_km_data_processing.csv" 
-filepath_czc = os.path.join(path_czc, file_czc) 
-df_czc = pd.read_csv(filepath_czc) 
-
-
-pattern = r'(.+?)\s*(County|Borough|Municipio|Municipality|Parish|Census Area|city|City and Borough)$'
-df_hh[['county1', 'countydes']] = df_hh['county'].str.extract(pattern, expand=True)
-
-
-# Adjust county1 and countydes based on the condition
-df_hh.loc[df_hh['countydes'] == 'city', 'county1'] = df_hh['county1'] + ' (city)'
-df_hh.loc[df_hh['countydes'] == 'city', 'countydes'] = 'city'
-
-df_hh.loc[df_hh['countydes'] == 'Census Area', 'county1'] = df_hh['county1'] + ' (CA)'
-df_hh.loc[df_hh['countydes'] == 'Census Area', 'countydes'] = 'Census Area'
-
-#manually fix carson city, NV and DC
-df_hh.loc[(df_hh['county'] == 'Carson City') & (df_hh['state'] == 'Nevada'), 'county1'] = 'Carson City (city)'
-df_hh.loc[(df_hh['county'] == 'Carson City') & (df_hh['state'] == 'Nevada'), 'countydes'] = 'city'
-
-df_hh.loc[(df_hh['county'] == 'District of Columbia') & (df_hh['state'] == 'District of Columbia'), 'county1'] = 'District of Columbia'
-df_hh.loc[(df_hh['county'] == 'District of Columbia') & (df_hh['state'] == 'District of Columbia'), 'countydes'] = 'District'
-
-#Fix Misc differences
-df_hh.loc[(df_hh['county'] == 'De Baca County') & (df_hh['state'] == 'New Mexico'), 'county1'] = 'DeBaca'
-df_hh.loc[(df_hh['county'] == 'De Baca County') & (df_hh['state'] == 'New Mexico'), 'countydes'] = 'County'
-
-df_hh.loc[(df_hh['county'] == 'LaSalle Parish') & (df_hh['state'] == 'Louisiana'), 'county1'] = 'La Salle'
-df_hh.loc[(df_hh['county'] == 'LaSalle Parish') & (df_hh['state'] == 'Louisiana'), 'countydes'] = 'Parish'
-
-df_hh.loc[(df_hh['county'] == 'LaPorte County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'La Porte'
-df_hh.loc[(df_hh['county'] == 'LaPorte County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
-
-df_hh.loc[(df_hh['county'] == 'LaGrange County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'Lagrange'
-df_hh.loc[(df_hh['county'] == 'LaGrange County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
-
-df_hh.loc[(df_hh['county'] == 'DeKalb County') & (df_hh['state'] == 'Indiana'), 'county1'] = 'De Kalb'
-df_hh.loc[(df_hh['county'] == 'DeKalb County') & (df_hh['state'] == 'Indiana'), 'countydes'] = 'County'
-
-df_hh.loc[(df_hh['county'] == 'LaSalle County') & (df_hh['state'] == 'Illinois'), 'county1'] = 'La Salle'
-df_hh.loc[(df_hh['county'] == 'LaSalle County') & (df_hh['state'] == 'Illinois'), 'countydes'] = 'County'
-
-#Alaska modifications (need someone to double check assumptions here)
-df_hh.loc[(df_hh['county'] == 'Prince of Wales-Hyder Census Area') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Prince of Wales-Outer Ketchikan (CA)'
-df_hh.loc[(df_hh['county'] == 'Prince of Wales-Hyder Census Area') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area'
-
-df_hh.loc[(df_hh['county'] == 'Wrangell City and Borough') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Wrangell-Petersburg (CA)'
-df_hh.loc[(df_hh['county'] == 'Wrangell City and Borough') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. City and Borough'
-
-df_hh.loc[(df_hh['county'] == 'Petersburg Borough') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Wrangell-Petersburg (CA)'
-df_hh.loc[(df_hh['county'] == 'Petersburg Borough') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. Borough'
-
-df_hh.loc[(df_hh['county'] == 'Skagway Municipality') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Skagway-Hoonah-Angoon (CA)'
-df_hh.loc[(df_hh['county'] == 'Skagway Municipality') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area fm. Municipality'
-
-df_hh.loc[(df_hh['county'] == 'Hoonah-Angoon Census Area') & (df_hh['state'] == 'Alaska'), 'county1'] = 'Skagway-Hoonah-Angoon (CA)'
-df_hh.loc[(df_hh['county'] == 'Hoonah-Angoon Census Area') & (df_hh['state'] == 'Alaska'), 'countydes'] = 'Census Area'
-
-
-
-# Create a dictionary mapping (county, state) to 'cz'
-cz_mapping = {(county, state): cz for county, state, cz in zip(df_czc['County'], df_czc['State'], df_czc['cz'])}
-
-# Use map to apply the mapping to create a new 'cz' column in df_hh
-df_hh['cz'] = df_hh.apply(lambda row: cz_mapping.get((row['county'], row['state']), 'None'), axis=1)
-
-
-
-cz_mapping = {(county, state): cz for county, state, cz in zip(df_czc['County'], df_czc['State'], df_czc['cz'])}
-
-# Use map to apply the mapping to create a new 'cz' column in df_hh
-df_hh['cz'] = df_hh.apply(lambda row: cz_mapping.get((row['county1'], row['state']), None), axis=1)
-
-
-
-# Group by 'cz' and calculate sum and count
-hh_per_cz = df_hh.groupby('cz').agg({'households': ['sum', 'count']}).reset_index()
-
-# Flatten the multi-index columns
-hh_per_cz.columns = ['cz', 'total_households', 'n_counties']
-
-
-hh_per_cz.to_clipboard(index=False, excel=True)
+#Meausre package 2.03 light touch- no STC delta based on assumptions/definition
+#Measure package 2.04 
+# Duct sealing
+#o 10% Leakage, R-8
+# Applies to all dwelling units with leakier and/or less-insulated ducts located in
+#unconditioned space
+#• Drill-and-fill wall insulation
+#o R-13 insulation with wood stud walls
+# Applies to dwelling units with uninsulated wood stud walls
 
 
 
