@@ -62,14 +62,14 @@ for column in df0.columns:
 # Creating a new DataFrame with the selected columns
 #df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.emissions.all_fuels.lrmer_high_re_cost_2030_boxavg.co2e_kg":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
 
-df0_new = df0[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df1_new = df1[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df2_new = df2[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df3_new = df3[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df4_new = df4[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df5_new = df5[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df0 = df0[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.windows', 'in.county']]
+df1 = df1[['upgrade', 'in.sqft', 'weight', 'in.windows', 'in.county']]
+df2 = df2[['upgrade', 'in.sqft', 'weight', 'in.windows', 'in.county']]
+df3 = df3[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df4 = df4[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df5 = df5[['upgrade', 'in.sqft', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
 
-df_ins = {
+data_ins = {
     'in.insulation_wall_match': [
         'Brick, 12-in, 3-wythe, R-11', 'Brick, 12-in, 3-wythe, R-15', 'Brick, 12-in, 3-wythe, R-19', 
         'Brick, 12-in, 3-wythe, R-7', 'Brick, 12-in, 3-wythe, Uninsulated', 'CMU, 6-in Hollow, R-11', 
@@ -83,7 +83,7 @@ df_ins = {
 }
 
 # Create the dataframe
-df_ins = pd.DataFrame(df_ins)
+df_ins = pd.DataFrame(data_ins)
 
 
 data_leakage = {
@@ -120,13 +120,21 @@ df_windows = pd.DataFrame(data_windows)
 
 
 
+# Add the STC column to df0
+df0 = df0.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
+# Add the STC column to df1
+df1 = df1.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
+# Add the STC column to df2
+df2 = df2.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
+
+
+df1['STC_delta'] = df1['STC'] - df0['STC']
+df2['STC_delta'] = df2['STC'] - df0['STC']
 
 
 
-
-
-
-
+df1['STC_delta'].mean()
+df2['STC_delta'].mean()
 
 
 
