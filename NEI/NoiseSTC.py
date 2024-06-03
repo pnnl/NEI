@@ -102,6 +102,23 @@ data_leakage = {
 df_leakage = pd.DataFrame(data_leakage)
 
 
+
+data_ach = {
+    'in.infiltration_match': [
+        '1 ACH50', '2 ACH50','3 ACH50','4 ACH50','5 ACH50','6 ACH50','7 ACH50',
+        '8 ACH50','10 ACH50','15 ACH50','20 ACH50','25 ACH50','30 ACH50','40 ACH50','50 ACH50'
+    ],
+    'STC Delta': [
+        1, 0.5, 0.5, 0.5, 0.5, 0, 0, 0, -0.5, -1, -2, -2.5, -3.5, -4.5, -6
+    ]
+}
+
+# Create the dataframe
+df_ach = pd.DataFrame(data_ach)
+
+
+
+
 data_windows = {
     'in.windows_match': [
         'Double, Clear, Metal, Air', 'Double, Clear, Metal, Air, Exterior Clear Storm', 
@@ -119,6 +136,7 @@ data_windows = {
 df_windows = pd.DataFrame(data_windows)
 
 
+###########Window Upgrade Calcs - 2.01 (thin triple) ###
 df1['in.windows_upgrade'] = 'Triple, Low-E, Non-metal, Air, L-Gain'
 # Add the STC column to df0
 df0 = df0.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
@@ -135,17 +153,23 @@ avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC': 'mea
 avg_stc_by_cz.columns = ['Climate Zone', 'Average STC', 'Average STC_diff', 'Average STC_new']
 print(avg_stc_by_cz)
 
-# Add the STC column to df2
-df2 = df2.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
 
 
 
+###no new STC column because it's based on the infiltration percentage differences 
+# Function to determine the value of STC_new
+def calculate_stc_new(row):
+    if 'single' in row['in.windows']:
+        return row['STC'] + 4
+    elif 'double' in row['in.windows']:
+        return row['STC'] + 2
+    else:
+        return row['STC']
 
-df2['STC_diff'] = df2['STC'] - df0['STC']
 
+df2['STC_new'] = df0.apply(calculate_stc_new, axis=1)
 
-
-
+df2['STC_diff'] = df2['STC_new'] - df0['STC']
 df2['STC_diff'].mean()
 
 
