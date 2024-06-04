@@ -246,22 +246,43 @@ print(avg_stc_by_cz3)
 
 
 ###no new STC column because it's based on the infiltration percentage differences 
-# Function to convert ACH50 string to integer for comparison
-def ach50_to_int(ach50_str):
-    return int(ach50_str.split()[0])
+# Function to convert ACH50 string to integer for comparison (already written line 221)
 
-# Apply the condition to create STC_new
-df3['STC_new'] = df0.apply(lambda row: row['STC_wall'] + 4 if ach50_to_int(row['in.infiltration']) > 10 else row['STC_wall'], axis=1)
+# Function to extract duct leakage percentage
+def get_leakage_percentage(duct_leakage_str):
+    try:
+        return int(duct_leakage_str.split('%')[0])
+    except (ValueError, AttributeError, IndexError):
+        return 0  # Default to 0 if the string format is unexpected or missing
 
 
-df3['STC_diff'] = df3['STC_new'] - df0['STC_wall']
-df3['STC_diff'].mean()
 
-avg_stc_by_cz3 = df3.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+# Apply the ACH condition to create STC_new0
+df0['STC_new0'] = df0.apply(lambda row: row['STC_wall'] + 4 if ach50_to_int(row['in.infiltration']) > 10 else row['STC_wall'], axis=1)
+# Apply the duct leakage to create STC_new1
+df0['STC_new1'] = df0.apply(
+    lambda row: row['STC_new0'] + 1 if get_leakage_percentage(row['in.duct_leakage_and_insulation']) == 20
+    else (row['STC_new0'] + 2 if get_leakage_percentage(row['in.duct_leakage_and_insulation']) == 30 else row['STC_new0']),
+    axis=1
+)
+# Apply the insulation upgrade condition to uninsulated wood studs to create STC_new2
+df0['STC_new2'] = df0.apply(
+    lambda row: row['STC_new1'] + 5 if row['in.insulation_wall'] == 'Wood Stud, Uninsulated' else row['STC_new1'],
+    axis=1
+)
+df4['STC_new'] = df0['STC_new2']
+
+
+df4['STC_diff'] = df4['STC_new'] - df0['STC_wall']
+df4['STC_diff'].mean()
+
+avg_stc_by_cz4 = df4.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
 
 # Rename the columns for clarity
-avg_stc_by_cz3.columns = ['Climate Zone', 'Average STC_diff', 'Average STC_new']
-print(avg_stc_by_cz3)
+avg_stc_by_cz4.columns = ['Climate Zone', 'Average STC_diff', 'Average STC_new']
+print(avg_stc_by_cz4)
 
 
+
+###SOMEONE PLEASE CHECK ALL WORK ABOVE!!!!############
 
