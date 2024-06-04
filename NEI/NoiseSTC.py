@@ -62,12 +62,12 @@ for column in df0.columns:
 # Creating a new DataFrame with the selected columns
 #df0_new = pd.DataFrame(df0.loc[:, "bldg_id":"upgrade"].join(df0.loc[:, "out.emissions.all_fuels.lrmer_high_re_cost_2030_boxavg.co2e_kg":"out.emissions.all_fuels.lrmer_mid_case_2030_boxavg.co2e_kg"]))
 
-df0 = df0[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.windows', 'in.county']]
-df1 = df1[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county']]
-df2 = df2[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county']]
-df3 = df3[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df4 = df4[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
-df5 = df5[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county']]
+df0 = df0[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.windows', 'in.county', 'in.infiltration']]
+df1 = df1[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county', 'in.infiltration']]
+df2 = df2[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.windows', 'in.county', 'in.infiltration']]
+df3 = df3[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county', 'in.infiltration']]
+df4 = df4[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county', 'in.infiltration']]
+df5 = df5[['upgrade', 'in.sqft', 'in.ashrae_iecc_climate_zone_2004', 'weight', 'in.duct_leakage_and_insulation', 'in.insulation_wall', 'in.county', 'in.infiltration']]
 
 data_ins = {
     'in.insulation_wall_match': [
@@ -77,7 +77,7 @@ data_ins = {
         'CMU, 6-in Hollow, Uninsulated', 'Wood Stud, R-11', 'Wood Stud, R-15', 'Wood Stud, R-19', 
         'Wood Stud, R-7', 'Wood Stud, Uninsulated'
     ],
-    'STC': [
+    'STC_wall0': [
         58, 60, 62, 56, 54, 49, 51, 53, 47, 45, 41, 43, 45, 39, 37
     ]
 }
@@ -127,7 +127,7 @@ data_windows = {
         'Single, Clear, Metal, Exterior Clear Storm', 'Single, Clear, Non-metal', 
         'Single, Clear, Non-metal, Exterior Clear Storm', 'Triple, Low-E, Non-metal, Air, L-Gain'
     ],
-    'STC': [
+    'STC_window': [
         33, 36, 33, 36, 33, 27, 29, 27, 29, 37
     ]
 }
@@ -139,15 +139,15 @@ df_windows = pd.DataFrame(data_windows)
 ###########Window Upgrade Calcs - 2.01 (thin triple) ###
 df1['in.windows_upgrade'] = 'Triple, Low-E, Non-metal, Air, L-Gain'
 # Add the STC column to df0
-df0 = df0.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
+df0 = df0.merge(df_windows[['in.windows_match', 'STC_window']], how='left', left_on='in.windows', right_on='in.windows_match').drop(columns='in.windows_match')
 # Add the STC column to df1
-df1 = df1.merge(df_windows[['in.windows_match', 'STC']], how='left', left_on='in.windows_upgrade', right_on='in.windows_match').drop(columns='in.windows_match')
+df1 = df1.merge(df_windows[['in.windows_match', 'STC_window']], how='left', left_on='in.windows_upgrade', right_on='in.windows_match').drop(columns='in.windows_match')
 
-df1['STC_diff'] = df1['STC'] - df0['STC']
+df1['STC_diff'] = df1['STC_window'] - df0['STC_window']
 df1['STC_diff'].mean()
-df1['STC_new'] = df1['STC']+df1['STC_diff']
+df1['STC_new'] = df1['STC_window']+df1['STC_diff']
 #avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004')['STC_new'].mean().reset_index()
-avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC': 'mean', 'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+avg_stc_by_cz = df1.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_window': 'mean', 'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
 
 # Rename the columns for clarity
 avg_stc_by_cz.columns = ['Climate Zone', 'Average STC', 'Average STC_diff', 'Average STC_new']
@@ -155,26 +155,86 @@ print(avg_stc_by_cz)
 
 
 
-
+############2.02##################
 ###no new STC column because it's based on the infiltration percentage differences 
 # Function to determine the value of STC_new
 def calculate_stc_new(row):
-    if 'single' in row['in.windows']:
-        return row['STC'] + 4
-    elif 'double' in row['in.windows']:
-        return row['STC'] + 2
+    if 'Single' in row['in.windows']:
+        return row['STC_window'] + 4
+    elif 'Double' in row['in.windows']:
+        return row['STC_window'] + 2
     else:
-        return row['STC']
+        return row['STC_window']
 
 
 df2['STC_new'] = df0.apply(calculate_stc_new, axis=1)
 
-df2['STC_diff'] = df2['STC_new'] - df0['STC']
+df2['STC_diff'] = df2['STC_new'] - df0['STC_window']
 df2['STC_diff'].mean()
 
+avg_stc_by_cz2 = df2.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+
+# Rename the columns for clarity
+avg_stc_by_cz2.columns = ['Climate Zone', 'Average STC_diff', 'Average STC_new']
+print(avg_stc_by_cz2)
 
 
-#Meausre package 2.03 light touch- no STC delta based on assumptions/definition
+
+
+############2.03##################
+#add STC column to df0 (call it STC_wall to differentiate from windows)
+# Step 1: Merge df0 with df_ins to add STC_wall0
+df0 = df0.merge(
+    df_ins[['in.insulation_wall_match', 'STC_wall0']],
+    how='left',
+    left_on='in.insulation_wall',
+    right_on='in.insulation_wall_match'
+).drop(columns='in.insulation_wall_match')
+
+# Step 2: Merge the resulting dataframe with df_ach to add STC Delta and calculate STC_wall1
+df0 = df0.merge(
+    df_ach[['in.infiltration_match', 'STC Delta']],
+    how='left',
+    left_on='in.infiltration',
+    right_on='in.infiltration_match'
+)
+df0['STC_wall1'] = df0['STC_wall0'] + df0['STC Delta']
+df0 = df0.drop(columns=['in.infiltration_match', 'STC Delta'])
+
+# Step 3: Merge the resulting dataframe with df_leakage to add another STC Delta and calculate STC_wall2
+df0 = df0.merge(
+    df_leakage[['in.duct_leakage_and_insulation_match', 'STC Delta']],
+    how='left',
+    left_on='in.duct_leakage_and_insulation',
+    right_on='in.duct_leakage_and_insulation_match'
+)
+df0['STC_wall2'] = df0['STC_wall1'] + df0['STC Delta']
+df0 = df0.drop(columns=['in.duct_leakage_and_insulation_match', 'STC Delta'])
+
+df0['STC_wall'] = df0['STC_wall2']
+
+
+
+#Meausre package 2.03 light touch- STC delta based on inflitration change (4 dB for those with >10 ACH50)
+###no new STC column because it's based on the infiltration percentage differences 
+# Function to convert ACH50 string to integer for comparison
+def ach50_to_int(ach50_str):
+    return int(ach50_str.split()[0])
+
+# Apply the condition to create STC_new
+df3['STC_new'] = df0.apply(lambda row: row['STC_wall'] + 4 if ach50_to_int(row['in.infiltration']) > 10 else row['STC_wall'], axis=1)
+
+
+df3['STC_diff'] = df3['STC_new'] - df0['STC_wall']
+df3['STC_diff'].mean()
+
+avg_stc_by_cz3 = df3.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+
+# Rename the columns for clarity
+avg_stc_by_cz3.columns = ['Climate Zone', 'Average STC_diff', 'Average STC_new']
+print(avg_stc_by_cz3)
+
+
 #Measure package 2.04 
 # Duct sealing
 #o 10% Leakage, R-8
@@ -183,6 +243,25 @@ df2['STC_diff'].mean()
 #• Drill-and-fill wall insulation
 #o R-13 insulation with wood stud walls
 # Applies to dwelling units with uninsulated wood stud walls
+
+
+###no new STC column because it's based on the infiltration percentage differences 
+# Function to convert ACH50 string to integer for comparison
+def ach50_to_int(ach50_str):
+    return int(ach50_str.split()[0])
+
+# Apply the condition to create STC_new
+df3['STC_new'] = df0.apply(lambda row: row['STC_wall'] + 4 if ach50_to_int(row['in.infiltration']) > 10 else row['STC_wall'], axis=1)
+
+
+df3['STC_diff'] = df3['STC_new'] - df0['STC_wall']
+df3['STC_diff'].mean()
+
+avg_stc_by_cz3 = df3.groupby('in.ashrae_iecc_climate_zone_2004').agg({'STC_diff': 'mean', 'STC_new': 'mean'}).reset_index()
+
+# Rename the columns for clarity
+avg_stc_by_cz3.columns = ['Climate Zone', 'Average STC_diff', 'Average STC_new']
+print(avg_stc_by_cz3)
 
 
 
