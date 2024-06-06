@@ -71,10 +71,5 @@ save_path = r"CensusPopulationEstimates"
 save_filepath = os.path.join(datsets_path, save_path)
 fig.savefig(os.path.join(save_filepath, "US_Population_County_2019.png"), dpi = 300)
 
-#%% test geodatasets for plotting
+#%% 
 
-all_geodatasets = geodatasets.data.flatten().keys()
-
-us_sdoh = gpd.read_file(geodatasets.get_path("geoda.us_sdoh"))
-
-us_sdoh.plot()
