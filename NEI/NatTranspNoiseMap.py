@@ -40,9 +40,41 @@ gdf1_USA = gdf1[USA_slice]
 NE_noise_path = r"National Transportation Noise Map\ArcGIS\Final Excel Spreadsheets (All Stats)\RRA_New_England_CB_STAT.xls" 
 NE_noise_filepath = os.path.join(datsets_path, NE_noise_path)
 NE_noise_df = pd.read_excel(NE_noise_filepath)
-NE_noise_df = NE_noise_df[["AFFGEOID", "Average dBA"]] # take geoID and noise thresholds
-NE_noise_per_df = NE_noise_df.loc[:, "Average dBA":"101+ dBA count"]
+
+#NE_noise_df = NE_noise_df[["AFFGEOID", "Average dBA"]] # take geoID and noise thresholds
+NE_noise_df = NE_noise_df[["Count", "AFFGEOID", "Average dBA", 
+                           "45 dBA count", "46-50 dBA count", "51-55 dBA count", "56-60 dBA count", "61-65 dBA count", 
+                           "66-70 dBA count", "71-75 dBA count", "76-80 dBA count", "81-85 dBA count", "86-90 dBA count", 
+                           "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]]
+
 NE_noise_df.rename(columns = {"AFFGEOID": "GEO_ID"}, inplace = True)
+
+
+#%% create threshold columns manually
+# county counts do not align with dBA counts totals
+
+thresh_85 = ["86-90 dBA count", "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]
+NE_noise_df["85+ Threshold"] = NE_noise_df[thresh_85].sum(axis = 1) / (NE_noise_df["Count"] * 0.01)
+
+thresh_75 = ["76-80 dBA count", "81-85 dBA count", "86-90 dBA count", "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]
+NE_noise_df["75+ Threshold"] = NE_noise_df[thresh_75].sum(axis = 1) / (NE_noise_df["Count"] * 0.01)
+
+thresh_65 = ["66-70 dBA count", "71-75 dBA count", "76-80 dBA count", "81-85 dBA count", "86-90 dBA count", "91-95 dBA count", 
+             "95-100 dBA count", "101+ dBA count"]
+NE_noise_df["65+ Threshold"] = NE_noise_df[thresh_65].sum(axis = 1) / (NE_noise_df["Count"] * 0.01)
+
+thresh_55 = ["56-60 dBA count", "61-65 dBA count","66-70 dBA count", "71-75 dBA count", "76-80 dBA count", "81-85 dBA count", 
+             "86-90 dBA count", "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]
+NE_noise_df["55+ Threshold"] = NE_noise_df[thresh_55].sum(axis = 1) / (NE_noise_df["Count"] * 0.01)
+
+thresh_45 = ["45 dBA count", "46-50 dBA count", "51-55 dBA count", "56-60 dBA count", "61-65 dBA count", "66-70 dBA count", 
+             "71-75 dBA count", "76-80 dBA count", "81-85 dBA count", "86-90 dBA count", "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]
+NE_noise_df["45+ Threshold"] = NE_noise_df[thresh_45].sum(axis = 1) / (NE_noise_df["Count"] * 0.01)
+
+
+#%% create threshold columns from percent columns
+
+
 
 
 #%% open all BTS data from ArcGIS National Transportation Noise Map Excel files
@@ -77,7 +109,7 @@ NE_noise_gdf = gpd.GeoDataFrame( pd.merge(NE_noise_df, gdf1_USA, on = "GEO_ID", 
 missing_geometry = noise_gdf[noise_gdf["geometry"].isna()]
 
 
-#%% plot noise data on county geomtry map
+#%% plot average noise data on county geomtry map
 
 def noise_mapper(gdf):
     
@@ -102,6 +134,52 @@ def noise_mapper(gdf):
     return None
 
 noise_mapper(NE_noise_gdf)
+
+
+#%% plot noise thresholds on counties map
+
+fig, axs = plt.subplots(2, 3, figsize = (15, 10))
+axs = axs.flatten()
+
+NE_noise_gdf.plot(column = "85+ Threshold", cmap = "viridis", ax = axs[0], cax = axs[0])
+axs[0].axis("off")
+axs[0].set_title("85+ Threshold (dBA)")
+
+NE_noise_gdf.plot(column = "75+ Threshold", cmap = "viridis", ax = axs[1], cax = axs[1])
+axs[1].axis("off")
+axs[1].set_title("75+ Threshold (dBA)")
+
+NE_noise_gdf.plot(column = "65+ Threshold", cmap = "viridis", ax = axs[2], cax = axs[2])
+axs[2].axis("off")
+axs[2].set_title("65+ Threshold (dBA)")
+
+NE_noise_gdf.plot(column = "55+ Threshold", cmap = "viridis", ax = axs[3], cax = axs[3])
+axs[3].axis("off")
+axs[3].set_title("55+ Threshold (dBA)")
+
+NE_noise_gdf.plot(column = "45+ Threshold", cmap = "viridis", ax = axs[4], cax = axs[4])
+axs[4].axis("off")
+axs[4].set_title("45+ Threshold (dBA)")
+
+NE_noise_gdf.plot(column = "Average dBA", cmap = "viridis", ax = axs[5], cax = axs[5])
+axs[5].axis("off")
+axs[5].set_title("Average Noise (dBA)")
+
+# annotate plot
+fig.subplots_adjust(bottom = 0.12)
+fig.suptitle("Percent (%) Exceeding Noise Thresholds by County, 2020")
+fig.text(0.5, 0.05, "Source: BTS National Transportation Noise Map, 2020", ha = "center", va = "bottom", fontsize = 12, color = "grey")
+
+# create colorbar as a legend
+sm = plt.cm.ScalarMappable(cmap = "viridis",
+                           norm = plt.Normalize(vmin = np.min(NE_noise_gdf.loc[:, "85+ Threshold":"45+ Threshold"]), 
+                                                vmax = np.max(NE_noise_gdf.loc[:, "85+ Threshold":"45+ Threshold"]) 
+                                                )
+                           )
+sm._A = [] # empty array for the data range
+cbar = fig.colorbar(sm, ax = axs) # add the colorbar to the figure
+
+
 
 #%% plot layers from gdb on top of CONUS projection
 
