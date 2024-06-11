@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 #%% set Spyder working folder to file location: \NEB Decarb - General\Datasets\
 
-datsets_path = os.getcwd()
+datasets_path = os.getcwd()
 
 #%% set gpd map projection to USA
 
@@ -22,15 +22,15 @@ USA = USA.to_crs("ESRI:102039") # reproject the coordinates to match the noise d
 # https://www.census.gov/cgi-bin/geo/shapefiles/index.php
 
 shp_path = r"CensusPopulationEstimates\Census_2023_US_County\tl_2023_us_county.shp"
-shp_filepath = os.path.join(datsets_path, shp_path)
+shp_filepath = os.path.join(datasets_path, shp_path)
 shp_df = gpd.read_file(shp_filepath)
 shp_df = shp_df.to_crs("ESRI:102039")
 
-#%% clean data and combine county geometry with noise data
+#%% clean data and slice county geometry by CONUS, AK, and HI
 # USA county GEO ID's range from 0500000US01001 to 0500000US56045, excludes other US-owned territories
 
 # take the GEO_ID's and geometry from the shapefile data
-gdf1 = shp_df[["GEOIDFQ", "geometry"]].sort_values("GEOIDFQ").reset_index(drop=True)
+gdf1 = shp_df[["GEOID", "GEOIDFQ", "geometry"]].sort_values("GEOIDFQ").reset_index(drop=True)
 gdf1.rename(columns = {"GEOIDFQ": "GEO_ID"}, inplace = True)
 USA_slice = gdf1["GEO_ID"].ge("0500000US01001") & gdf1["GEO_ID"].le("0500000US56045")
 gdf1_USA = gdf1[USA_slice]
@@ -38,7 +38,7 @@ gdf1_USA = gdf1[USA_slice]
 #%% open one National Transportation Noise Map Excel file for New England
 
 NE_noise_path = r"National Transportation Noise Map\ArcGIS\Final Excel Spreadsheets (All Stats)\RRA_New_England_CB_STAT.xls" 
-NE_noise_filepath = os.path.join(datsets_path, NE_noise_path)
+NE_noise_filepath = os.path.join(datasets_path, NE_noise_path)
 NE_noise_df = pd.read_excel(NE_noise_filepath)
 
 #NE_noise_df = NE_noise_df[["AFFGEOID", "Average dBA"]] # take geoID and noise thresholds
@@ -48,6 +48,17 @@ NE_noise_df = NE_noise_df[["Count", "AFFGEOID", "Average dBA",
                            "91-95 dBA count", "95-100 dBA count", "101+ dBA count"]]
 
 NE_noise_df.rename(columns = {"AFFGEOID": "GEO_ID"}, inplace = True)
+
+
+#%% open one noise map csv for US Pacific
+
+pacific_noise_path = r"National Transportation Noise Map\ArcGIS\Final Excel Spreadsheets (All Stats)\df.pacific.csv"
+pacific_noise_filepath = os.path.join(datasets_path, pacific_noise_path)
+pacific_noise_df = pd.read_csv(pacific_noise_filepath)
+
+pacific_noise_df = pacific_noise_df.fillna(0)
+pacific_noise_df["GEOID"] = pacific_noise_df["GEOID"].astype(int).astype(str)
+pacific_noise_df["GEOID"] = pacific_noise_df["GEOID"].str.pad(5, "left", "0")
 
 
 #%% create threshold columns manually
@@ -74,7 +85,11 @@ NE_noise_df["45+ Threshold"] = NE_noise_df[thresh_45].sum(axis = 1) / (NE_noise_
 
 #%% create threshold columns from percent columns
 
-
+pacific_noise_df["85+ Threshold"] = pacific_noise_df.loc[:, "per 85-90":"per >100"].sum(axis = 1)
+pacific_noise_df["75+ Threshold"] = pacific_noise_df.loc[:, "per 75-80":"per >100"].sum(axis = 1)
+pacific_noise_df["65+ Threshold"] = pacific_noise_df.loc[:, "per 65-70":"per >100"].sum(axis = 1)
+pacific_noise_df["55+ Threshold"] = pacific_noise_df.loc[:, "per 55-60":"per >100"].sum(axis = 1)
+pacific_noise_df["45+ Threshold"] = pacific_noise_df.loc[:, "per 45":"per >100"].sum(axis = 1)
 
 
 #%% open all BTS data from ArcGIS National Transportation Noise Map Excel files
@@ -105,17 +120,19 @@ noise_gdf = gpd.GeoDataFrame( pd.merge(noise_combined_df, gdf1_USA, on = "GEO_ID
 
 NE_noise_gdf = gpd.GeoDataFrame( pd.merge(NE_noise_df, gdf1_USA, on = "GEO_ID", how = "inner") ) # New England
 
+pacific_noise_gdf = gpd.GeoDataFrame( pd.merge(pacific_noise_df, gdf1_USA, on = "GEOID", how = "inner") ) # Pacific
+
 # create list of counties with missing info
 missing_geometry = noise_gdf[noise_gdf["geometry"].isna()]
 
 
 #%% plot average noise data on county geomtry map
 
-def noise_mapper(gdf):
+def noise_mapper(gdf, column="mean.db"):
     
     fig, ax = plt.subplots(1, figsize = (10, 6))
     
-    gdf.plot(column = "Average dBA", cmap = "viridis", ax = ax, cax = ax)
+    gdf.plot(column = column, cmap = "viridis", ax = ax, cax = ax)
     
     # add annotations to map plot
     ax.axis("off")
@@ -126,59 +143,99 @@ def noise_mapper(gdf):
     
     # create colorbar as a legend
     sm = plt.cm.ScalarMappable(cmap = "viridis",
-                               norm = plt.Normalize(vmin = np.min(gdf["Average dBA"]), vmax = np.max(gdf["Average dBA"]))
+                               norm = plt.Normalize(vmin = np.min(gdf[column]), vmax = np.max(gdf[column]))
                                )
     sm._A = [] # empty array for the data range
     cbar = fig.colorbar(sm, ax = ax) # add the colorbar to the figure
     
     return None
 
-noise_mapper(NE_noise_gdf)
+noise_mapper(pacific_noise_gdf)
 
 
 #%% plot noise thresholds on counties map
 
-fig, axs = plt.subplots(2, 3, figsize = (15, 10))
-axs = axs.flatten()
+def noise_threshold_map(gdf):
+    
+    fig, axs = plt.subplots(2, 3, figsize = (15, 10))
+    axs = axs.flatten()
+    
+    columns = ["85+ Threshold", "75+ Threshold", "65+ Threshold", "55+ Threshold", "45+ Threshold"]
+    
+    for i, column in enumerate(columns):
 
-NE_noise_gdf.plot(column = "85+ Threshold", cmap = "viridis", ax = axs[0], cax = axs[0])
-axs[0].axis("off")
-axs[0].set_title("85+ Threshold (dBA)")
+        gdf.plot(column = column, cmap = "viridis", ax = axs[i], 
+                 #cax = axs[i],
+                 vmin = gdf[column].min(), vmax = gdf[column].max(), legend = True)
+        axs[i].axis("off")
+        axs[i].set_title(f"{column} (dBA)")
+    
+    i = len(columns)
+    gdf.plot(column = "mean.db", cmap = "viridis", ax = axs[i], 
+             #cax = axs[i],
+             vmin = gdf["mean.db"].min(), vmax = gdf["mean.db"].max(), legend = True)
+    axs[i].axis("off")
+    axs[i].set_title("Average Noise (dBA)")
+    
+    # annotate plot
+    fig.subplots_adjust(bottom = 0.12)
+    fig.suptitle("Percent (%) Exceeding Noise Thresholds by County, 2020")
+    fig.text(0.5, 0.05, "Source: BTS National Transportation Noise Map, 2020", ha = "center", va = "bottom", fontsize = 12, color = "grey")
+    
+    # create colorbar as a legend
+    sm = plt.cm.ScalarMappable(cmap = "viridis"
+                               # norm = plt.Normalize(vmin = np.min(gdf.loc[:, "85+ Threshold":"45+ Threshold"]), 
+                               #                      vmax = np.max(gdf.loc[:, "85+ Threshold":"45+ Threshold"]) 
+                               #                      )
+                               )
+    # sm._A = [] # empty array for the data range
+    # cbar = fig.colorbar(sm, ax = axs) # add the colorbar to the figure
+    
+    return None
 
-NE_noise_gdf.plot(column = "75+ Threshold", cmap = "viridis", ax = axs[1], cax = axs[1])
-axs[1].axis("off")
-axs[1].set_title("75+ Threshold (dBA)")
 
-NE_noise_gdf.plot(column = "65+ Threshold", cmap = "viridis", ax = axs[2], cax = axs[2])
-axs[2].axis("off")
-axs[2].set_title("65+ Threshold (dBA)")
+noise_threshold_map(pacific_noise_gdf)
 
-NE_noise_gdf.plot(column = "55+ Threshold", cmap = "viridis", ax = axs[3], cax = axs[3])
-axs[3].axis("off")
-axs[3].set_title("55+ Threshold (dBA)")
 
-NE_noise_gdf.plot(column = "45+ Threshold", cmap = "viridis", ax = axs[4], cax = axs[4])
-axs[4].axis("off")
-axs[4].set_title("45+ Threshold (dBA)")
+#%% plot noise quartiles on counties map
 
-NE_noise_gdf.plot(column = "Average dBA", cmap = "viridis", ax = axs[5], cax = axs[5])
-axs[5].axis("off")
-axs[5].set_title("Average Noise (dBA)")
+def noise_quartiles_map(gdf):
+    
+    fig, axs = plt.subplots(2, 3, figsize = (15, 10))
+    axs = axs.flatten()
+    
+    columns = ["100%", "75%", "50%", "25%", "0%"]
+    
+    for i, column in enumerate(columns):
 
-# annotate plot
-fig.subplots_adjust(bottom = 0.12)
-fig.suptitle("Percent (%) Exceeding Noise Thresholds by County, 2020")
-fig.text(0.5, 0.05, "Source: BTS National Transportation Noise Map, 2020", ha = "center", va = "bottom", fontsize = 12, color = "grey")
+        gdf.plot(column = column, cmap = "viridis", ax = axs[i], cax = axs[i])
+        axs[i].axis("off")
+        axs[i].set_title(f"{column}")
+    
+    i = len(columns)
+    gdf.plot(column = "mean.db", cmap = "viridis", ax = axs[i], cax = axs[i])
+    axs[i].axis("off")
+    axs[i].set_title("Average (dBA)")
+    
+    # annotate plo
+    fig.subplots_adjust(bottom = 0.12)
+    fig.suptitle("Noise Quantiles by County (in dBA), 2020")
+    fig.text(0.5, 0.05, "Source: BTS National Transportation Noise Map, 2020", ha = "center", va = "bottom", fontsize = 12, color = "grey")
+    
+    # create colorbar as a legend
+    sm = plt.cm.ScalarMappable(cmap = "viridis",
+                               norm = plt.Normalize(vmin = np.min(gdf.loc[:, columns]), 
+                                                    vmax = np.max(gdf.loc[:, columns]) 
+                                                    )
+                               )
+    
+    sm._A = [] # empty array for the data range
+    cbar = fig.colorbar(sm, ax = axs) # add the colorbar to the figure
+    
+    return None
 
-# create colorbar as a legend
-sm = plt.cm.ScalarMappable(cmap = "viridis",
-                           norm = plt.Normalize(vmin = np.min(NE_noise_gdf.loc[:, "85+ Threshold":"45+ Threshold"]), 
-                                                vmax = np.max(NE_noise_gdf.loc[:, "85+ Threshold":"45+ Threshold"]) 
-                                                )
-                           )
-sm._A = [] # empty array for the data range
-cbar = fig.colorbar(sm, ax = axs) # add the colorbar to the figure
 
+noise_quartiles_map(pacific_noise_gdf)
 
 
 #%% plot layers from gdb on top of CONUS projection
