@@ -1,11 +1,9 @@
 #%%
 import os
+import csv
 import pandas as pd
 import numpy as np
 import geopandas as gpd
-import fiona as fi
-import cartopy
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 #%% set Spyder working folder to file location: \NEB Decarb - General\Datasets\
@@ -24,7 +22,8 @@ shp_df = shp_df.to_crs("ESRI:102039")
 # USA county GEO ID's range from 0500000US01001 to 0500000US56045, excludes other US-owned territories
 
 # take the GEOID's and geometry from the shapefile data
-gdf1 = shp_df[["GEOID", "geometry"]].sort_values("GEOID").reset_index(drop=True)
+gdf1 = shp_df[["GEOID", "NAMELSAD", "geometry"]].sort_values("GEOID").reset_index(drop=True)
+gdf1.rename(columns = {"NAMELSAD": "county_name"}, inplace = True)
 USA_slice = gdf1["GEOID"].ge("01001") & gdf1["GEOID"].le("56045") # take just the USA slice
 gdf1_USA = gdf1[USA_slice]
 
@@ -36,8 +35,9 @@ def combine_noise(noise_path, CONUS=False):
     
     all_noise_files = os.listdir(noise_path)
     
+    # choose whether to exclude AK and HI from df
     if CONUS == True:
-        US_noise_files = [file for file in all_noise_files if file.endswith(".csv") and file not in ["df.alaska2020.csv", "df.hawaii.csv"]]
+        US_noise_files = [file for file in all_noise_files if file.endswith(".csv") and file not in ["df.alaska.csv", "df.hawaii.csv"]]
     else: 
         US_noise_files = [file for file in all_noise_files if file.endswith(".csv")]
     
@@ -49,15 +49,16 @@ def combine_noise(noise_path, CONUS=False):
         df = df.fillna(0) # fill in blanks or nans with 0
         df["GEOID"] = df["GEOID"].astype(int).astype(str) # convert to string to avoid leading 0 loss
         df["GEOID"] = df["GEOID"].str.pad(5, "left", "0") # add leading 0 back
+        df["region"] = file[ file.find(".")+1 : file.rfind(".") ] # add a column for region name
         noise_dfs.append(df)
     
     noise_combined_df = pd.concat(noise_dfs).sort_values("GEOID").reset_index(drop=True)
+    noise_combined_df.insert(1, "region", noise_combined_df.pop("region")) # move region column to the front
     
     return noise_combined_df
 
 US_noise_combined_df = combine_noise(noise_path)
 CONUS_noise_combined_df = combine_noise(noise_path, CONUS=True)
-
 
 #%% create threshold columns from percent columns
 
@@ -74,12 +75,23 @@ def add_thresh(noise_combined_df):
 US_noise_combined_df = add_thresh(US_noise_combined_df)
 CONUS_noise_combined_df = add_thresh(CONUS_noise_combined_df)
 
-
 #%% combine cleaned county geometry with noise data
 
 US_noise_gdf = gpd.GeoDataFrame( pd.merge(US_noise_combined_df, gdf1_USA, on = "GEOID", how = "inner") ) # all US counties
-CONUS_noise_gdf = gpd.GeoDataFrame( pd.merge(CONUS_noise_combined_df, gdf1_USA, on = "GEOID", how = "inner") ) # exclude AK and HI
+US_noise_gdf.insert(1, "county_name", US_noise_gdf.pop("county_name")) # move county name column to the front
 
+CONUS_noise_gdf = gpd.GeoDataFrame( pd.merge(CONUS_noise_combined_df, gdf1_USA, on = "GEOID", how = "inner") ) # exclude AK and HI
+CONUS_noise_gdf.insert(1, "county_name", CONUS_noise_gdf.pop("county_name")) # move county name column to the front
+
+#%% export combined geodataframe as shape file, csv
+
+save_path = r"National Transportation Noise Map\Noise Map GeoDataFrame"
+
+US_noise_gdf.to_file(os.path.join(save_path, "US_noise_gdf.shp")) # save as shape file
+
+US_noise_gdf_csv = US_noise_gdf.drop("geometry", axis = 1) # remove geometry column for csv export
+US_noise_gdf_csv["GEOID"] = US_noise_gdf_csv["GEOID"].apply(lambda x: f'"{x}"') # quote GEOID column to preserve leading 0s
+US_noise_gdf_csv.to_csv(os.path.join(save_path, "US_noise_gdf.csv"), index = False) # save as csv
 
 #%% plot noise data on county geomtry map by selected column
 
@@ -199,7 +211,6 @@ noise_quartiles_map(US_noise_gdf)
 
 
 #%% TODO 
-# add region column to gdf
 # pull out high risk counties (>85) and match with potential STC deltas from upgrades at county level
 # compare with population or households per county
 # export hi-res plots function
