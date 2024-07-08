@@ -261,7 +261,7 @@ def bar_plotter(column, save_path=None):
 import math
 from collections import OrderedDict
 
-def pie_plotter(data_groups_dicts, column, group_by_column, save_path=None):
+def pie_plotter(data_groups_dicts, column, group_by_column, binary_categories, save_path=None):
     
     data_groups = list(data_groups_dicts.keys())
     num_groups = len(data_groups)
@@ -306,9 +306,14 @@ def pie_plotter(data_groups_dicts, column, group_by_column, save_path=None):
     # remove any unused axes
     for j in range(i + 1, len(axes)):
         axes[j].set_visible(False)
-
+    
+    # change lengend names to yes/no if binary
+    legend_labels = list(unique_labels.keys())
+    if column in binary_categories:
+        legend_labels = ["No", "Yes"]
+    
     fig.suptitle(f"Group: {group_by_column} \n Column: {column}", fontsize=10)
-    fig.legend(handles, list(unique_labels.keys()), loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
+    fig.legend(handles, legend_labels, loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
 
     if save_path is not None:
         plt.savefig(os.path.join(save_path, f"{column}_pie.png"), dpi=300, bbox_inches="tight")
