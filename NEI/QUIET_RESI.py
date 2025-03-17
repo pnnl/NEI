@@ -50,7 +50,7 @@ df0['in.geometry_wall_exterior_finish'].value_counts()
 df0['in.geometry_wall_type'].value_counts()
 df0['in.insulation_wall'].value_counts()
 
-#import TL values from spreadsheet
+#import TL values from spreadsheet TL_database from NEB Decarb - Conferences - Buildings XVI - Data and Analysis #NEED
 
 #extrapolate down to get 100 and 80 Hz (linear)
 
@@ -119,6 +119,15 @@ df0['TL_tot_4000']  = 10*math.log10((df0['A_win']*10**(-df0['TL_win_4000']/10)+d
 df0['TL_tot_5000']  = 10*math.log10((df0['A_win']*10**(-df0['TL_win_5000']/10)+df0['A_wal']*10**(-df0['TL_wal_5000']/10))/df0['A_tot'])
 
 	
+
+#calculate OITC for everything according to ASTM E1332-22 Classification for Rating Outdoor-Indoor Sound Attenuation (in the NEI zotero folder)
+
+
+#pull in the traffic spectrum traffic_spectrum in the Buildings XVI shared folder
+
+
+
+
 #in.geometry_wall_exterior_finish
 #in.geometry_wall_type
 #in.insulation_wall
