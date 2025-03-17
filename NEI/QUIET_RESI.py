@@ -139,7 +139,7 @@ for freq in tl_frequencies:
 
 # interpolate values in TL_database
 # Select only the relevant columns for interpolation
-cols_to_interpolate = [50, 63, 80, 100, 135, 250]
+cols_to_interpolate = [50, 63, 80, 100, 125, 250]
 df_subset = df_TL[cols_to_interpolate].T  # Transpose for row-wise interpolation
 
 # Perform linear interpolation
