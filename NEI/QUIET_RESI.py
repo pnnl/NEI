@@ -140,27 +140,14 @@ for freq in tl_frequencies:
 # interpolate values in TL_database
 # Select only the relevant columns for interpolation
 cols_to_interpolate = [50, 63, 80, 100, 135, 250]
-df_subset = df_TL[cols_to_interpolate].T  # Transpose
+df_subset = df_TL[cols_to_interpolate].T  # Transpose for row-wise interpolation
 
 # Perform linear interpolation
-df_subset = df_subset.interpolate(method='linear', axis=0, limit_direction='both')
+df_interpolated = df_subset.interpolate(method='linear', axis=0, limit_direction='both')
 
-# Transpose back to original format
-df_TL[cols_to_interpolate] = df_subset.T
+# Keep existing values from original DataFrame
+df_TL[cols_to_interpolate] = df_interpolated.T.where(df_TL[cols_to_interpolate].isna(), df_TL[cols_to_interpolate])
 
-<<<<<<< HEAD
-=======
-	
-
-#calculate OITC for everything according to ASTM E1332-22 Classification for Rating Outdoor-Indoor Sound Attenuation (in the NEI zotero folder)
-
-
-#pull in the traffic spectrum traffic_spectrum in the Buildings XVI shared folder
-
-
-
-
->>>>>>> 725c3f1eecb55cb5783377905000bd4ef03a4c13
 #in.geometry_wall_exterior_finish
 #in.geometry_wall_type
 #in.insulation_wall
