@@ -114,6 +114,7 @@ def calculate_oitc(df0, df_TL, df_oitc):
     oitc_list = []
 
     # constant for now, change with county later
+    # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use
     sum_bcf_rss = df_oitc["sum_bcf_rss"]
 
     # list TL columns
@@ -132,6 +133,9 @@ def calculate_oitc(df0, df_TL, df_oitc):
         # will return 0-lots of rows. if 0 drop row. randomly select one of the matching rows considering
         # values for each row in weight column.
 
+        # @ Kieren: here is where we want to reassess the matching process. maybe something to do with 
+        # if df_TL["Basic_Category"] %in% wall_in and df_TL["Secondary_Category"] %in% wall_out....
+
         # match wall TL
         wall_match = df_TL[
             (df_TL["Basic_Category"] == wall_in) &
@@ -143,9 +147,13 @@ def calculate_oitc(df0, df_TL, df_oitc):
         win_match = df_TL[df_TL["Basic_Category"] == win]
         TL_win = win_match[f_columns].iloc[0] if not win_match.empty else pd.Series(np.nan, index=f_columns)
 
+        # @ Kieren: here is the point where we want to check to make sure that TL_wall and TL_win are the same shape
+        # as sum_bcf_rss.
+
         # area-weighted TL across all frequency bands
         TL_ass = 10 * np.log10((A_win * 10 ** (-TL_win / 10) + A_wal * 10 ** (-TL_wall / 10)) / A_tot)
 
+        # @ Kieren: here we should check to ensure that TL_ass and sum_bcf_rss are the same shape
         # indoor noise at each frequency band
         indoor_noise_curve = sum_bcf_rss - TL_ass
 
