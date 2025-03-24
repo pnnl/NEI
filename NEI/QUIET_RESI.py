@@ -31,8 +31,10 @@ import random
 username = os.getlogin() # get your active username
 share_path = fr"C:\Users\{username}\\" # insert your username in the file path
 
-# path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock\2024.1" #os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
-path = "/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Datasets/ResStock/2024.1/"
+path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock\2024.1" #os.getcwd() # this will get your current active folder, or you can type it directly with r"C:\path\to\folder\etc\\"
+#path = "/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Datasets/ResStock/2024.1/"
+
+
 file = r"baseline_metadata_and_annual_results.parquet" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
 filepath = os.path.join(path, file) # add the file to the folder path
 df0 = pd.read_parquet(filepath) # read the file at the specified filepath into a pandas dataframeb
@@ -51,9 +53,16 @@ df0['in.geometry_wall_type'].value_counts()
 df0['in.insulation_wall'].value_counts()
 
 #import TL values from spreadsheet TL_database from NEB Decarb - Conferences - Buildings XVI - Data and Analysis #NEED
-df_TL = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/TL_database.xlsx")
-df_traffic = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/traffic_spectrum.xlsx")
-df_oitc = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/Transmission Loss Coefficients.xlsx", sheet_name="OITC_plain")
+#df_TL = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/TL_database.xlsx")
+#df_traffic = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/traffic_spectrum.xlsx")
+#df_oitc = pd.read_excel("/Users/rose775/Library/CloudStorage/OneDrive-PNNL/General - NEB Decarb/Conferences/Buildings XVI/Data and Analysis/Transmission Loss Coefficients.xlsx", sheet_name="OITC_plain")
+
+#Kieren Filepath Below:
+df_TL = pd.read_excel("C:/Users/mcco689/PNNL/NEB Decarb - General/Conferences/Buildings XVI/Data and Analysis/TL_database.xlsx")
+df_traffic = pd.read_excel("C:/Users/mcco689/PNNL/NEB Decarb - General/Conferences/Buildings XVI/Data and Analysis/traffic_spectrum.xlsx")
+df_oitc = pd.read_excel("C:/Users/mcco689/PNNL/NEB Decarb - General/Conferences/Buildings XVI/Data and Analysis/Transmission Loss Coefficients.xlsx", sheet_name="OITC_plain")
+
+
 
 # NOT WORKING
 # interpolating TL values
@@ -92,8 +101,8 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     
     if secondary_category:
         filtered_df = df[
-            df["Basic_Category"].str.contains(basic_category, na=False) & 
-            df["Secondary_Category"].str.contains(secondary_category, na=False)
+            df["ResStock_match"].str.contains(basic_category, na=False) & 
+            df["ResStock_match_out"].str.contains(secondary_category, na=False)
         ]
     else:
         filtered_df = df[df["Basic_Category"].str.contains(basic_category, na=False)]
@@ -134,11 +143,12 @@ def calculate_oitc(df0, df_TL, df_oitc):
     oitc_list = []
 
     # constant for now, change with county later
-    # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use
+    # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use 
+    #note from Kieren: use all between 80 and 4000, so the object should be 18 values (numerical)
     sum_bcf_rss = df_oitc["sum_bcf_rss"]
 
     # list TL columns in df_TL to be used later
-    f_columns = [col for col in df_TL.columns if col.startswith("f")]
+    f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
 
     for _, row in df0.iterrows():
         A_win = row['A_win']
