@@ -95,6 +95,8 @@ for idx, row in df_TL.iterrows():
 
 print("break")
 
+
+##function for getting the TL rows that we will use for each entry in ResStock
 def get_matching_TL(df, basic_category, secondary_category=None):
     """Fetch a random row based on the Basic_Category and optional Secondary_Category,
        returning the 'f' columns as a Series if a match is found, otherwise None."""
@@ -105,11 +107,11 @@ def get_matching_TL(df, basic_category, secondary_category=None):
             df["ResStock_match_out"].str.contains(secondary_category, na=False)
         ]
     else:
-        filtered_df = df[df["Basic_Category"].str.contains(basic_category, na=False)]
+        filtered_df = df[df["ResStock_match"].str.contains(basic_category, na=False)]
     
     if not filtered_df.empty:
         random_row = filtered_df.sample(n=1)
-        f_columns = [col for col in random_row.columns if col.startswith("f")]
+        f_columns = [col for col in random_row.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns of interest
         return random_row[f_columns].squeeze()
     else:
         return None
@@ -147,8 +149,8 @@ def calculate_oitc(df0, df_TL, df_oitc):
     #note from Kieren: use all between 80 and 4000, so the object should be 18 values (numerical)
     sum_bcf_rss = df_oitc["sum_bcf_rss"]
 
-    # list TL columns in df_TL to be used later
-    f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
+    # list TL columns in df_TL to be used later (do we still need this step or is it redundant now based on line 114?) commenting out for now
+    #f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
 
     for _, row in df0.iterrows():
         A_win = row['A_win']
