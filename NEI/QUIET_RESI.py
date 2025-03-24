@@ -21,6 +21,7 @@ import fastparquet as fp
 import math
 from sklearn import linear_model # scikit-learn is a very useful machine learning library with many models built in
 from unidecode import unidecode
+import random
 #import torch # pytorch and tensorflow are both very powerful deep learning libraries for more advanced machine learning models
 #import tensorflow as tf # they currently do not work with the latest Python version however
 
@@ -85,6 +86,25 @@ for idx, row in df_TL.iterrows():
 
 print("break")
 
+def get_matching_TL(df, basic_category, secondary_category=None):
+    """Fetch a random row based on the Basic_Category and optional Secondary_Category,
+       returning the 'f' columns as a Series if a match is found, otherwise None."""
+    
+    if secondary_category:
+        filtered_df = df[
+            df["Basic_Category"].str.contains(basic_category, na=False) & 
+            df["Secondary_Category"].str.contains(secondary_category, na=False)
+        ]
+    else:
+        filtered_df = df[df["Basic_Category"].str.contains(basic_category, na=False)]
+    
+    if not filtered_df.empty:
+        random_row = filtered_df.sample(n=1)
+        f_columns = [col for col in random_row.columns if col.startswith("f")]
+        return random_row[f_columns].squeeze()
+    else:
+        return None
+
 # Method to calculate OITC
 # for row, index in df0.iterrows():
 #     A_win = df0.loc[row, 'A_win']
@@ -117,7 +137,7 @@ def calculate_oitc(df0, df_TL, df_oitc):
     # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use
     sum_bcf_rss = df_oitc["sum_bcf_rss"]
 
-    # list TL columns
+    # list TL columns in df_TL to be used later
     f_columns = [col for col in df_TL.columns if col.startswith("f")]
 
     for _, row in df0.iterrows():
@@ -133,19 +153,11 @@ def calculate_oitc(df0, df_TL, df_oitc):
         # will return 0-lots of rows. if 0 drop row. randomly select one of the matching rows considering
         # values for each row in weight column.
 
-        # @ Kieren: here is where we want to reassess the matching process. maybe something to do with 
-        # if df_TL["Basic_Category"] %in% wall_in and df_TL["Secondary_Category"] %in% wall_out....
+        # Match wall TL
+        TL_wall = get_matching_TL(df_TL, wall_in, wall_out)
 
-        # match wall TL
-        wall_match = df_TL[
-            (df_TL["Basic_Category"] == wall_in) &
-            (df_TL["Secondary_Category"] == wall_out)
-        ]
-        TL_wall = wall_match[f_columns].iloc[0] if not wall_match.empty else pd.Series(np.nan, index=f_columns)
-
-        # match window TL
-        win_match = df_TL[df_TL["Basic_Category"] == win]
-        TL_win = win_match[f_columns].iloc[0] if not win_match.empty else pd.Series(np.nan, index=f_columns)
+        # Match window TL
+        TL_win = get_matching_TL(df_TL, win)
 
         # @ Kieren: here is the point where we want to check to make sure that TL_wall and TL_win are the same shape
         # as sum_bcf_rss.
