@@ -70,8 +70,6 @@ df_traffic = pd.read_excel("C:/Users/mcco689/PNNL/NEB Decarb - General/Conferenc
 df_oitc = pd.read_excel("C:/Users/mcco689/PNNL/NEB Decarb - General/Conferences/Buildings XVI/Data and Analysis/Transmission Loss Coefficients.xlsx", sheet_name="OITC_plain")
 
 
-
-# NOT WORKING
 # interpolating TL values
 # define frequency values
 freqs = {
@@ -92,22 +90,9 @@ for idx, row in df_TL.iterrows():
     if pd.isna(row["f125"]) or pd.isna(row["f250"]):
         continue
 
-    # corresponding frequencies and values
-    #known_freqs = np.array([freqs[col] for col in available_cols])  # maybe change to log scale
-    #known_values = row[available_cols].astype(float).values
     
-    #new method just based on 125 and 250:
-    #known_freqs = [np.log10(freqs["f125"]), np.log10(freqs["f250"])]
-    #known_values = [row["f125"], row["f250"]]
 
-    # Interpolate in linear space
-    #for col in cols_interp:
-    #    if pd.isna(row[col]):  # Only fill missing values
-    #        interp_freq = np.log10(freqs[col]) #added to convert interpolation to log
-    #        interp_value = np.interp(interp_freq, known_freqs, known_values) #interp_freq used to be freqs[col]
-    #        df_TL.at[idx, col] = interp_value
-
-    #redid to just use 125 adn 250 center band frequencies for simplicity
+    #redid to just use 125 and 250 center band frequencies for simplicity
     # Values at 125 and 250 Hz
     val_125 = row["f125"]
     val_250 = row["f250"]
@@ -130,7 +115,10 @@ for idx, row in df_TL.iterrows():
 
 print("break")
 
-
+def match_in_list(column, value):
+        return column.str.contains(f'(?<=^|;){value}(?=;|$)', na=False)
+    
+    
 ##function for getting the TL rows that we will use for each entry in ResStock
 def get_matching_TL(df, basic_category, secondary_category=None):
     """Fetch a random row based on the Basic_Category and optional Secondary_Category,
@@ -151,28 +139,7 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     else:
         return None
 
-# Method to calculate OITC
-# for row, index in df0.iterrows():
-#     A_win = df0.loc[row, 'A_win']
-#     A_wal = df0.loc[row, 'A_wal']
-#     A_tot = df0.loc[row, 'A_tot']
-#     win = df0.loc[row, 'in.windows']
-#     wall_in = df0.loc[row, 'in.insulation_wall']
-#     wall_out = df0.loc[row, 'in.geometry_wall_exterior']
 
-# match the value in wall_in, wall_out to a row in df_TL using df_TL["Basic_Category"] for wall_in and df_TL["Secondary_Category"] for wall_out, which gives us our  wall F values for
-# that resstock row. return series of f values named TL_wall
-
-# match the value in win to a row in df_TL["Basic_Category"] , which gives us our  window F values for that resstock row. return series of f values named TL_win
-
-# TL_ass = 10 * np.log10((A_win * 10 ** (-TL_win / 10) + A_wal * 10**(-TL_wal / 10)) / A_tot) # this is a series, equation computed for each value in TL_win/TL_wall series, inxed position across two series is the same
-# if possible, replace rss with NTNM data by county match with spectral curve from traffic_spectrum.xlsx
-# indoor_noise_curve = df_oitc["sum_bcf_rss"] - TL_ass
-
-# indoor_level = 10 * np.log10(sum(10**((indoor_noise_curve))))
-# outdoor_level = 10 * np.log10(sum(10**((df_oitc["sum_bcf_rss"]))))
-
-# df0["oitc"] = outdoor_level - indoor level
 
 # calculate OITC attempt 1
 def calculate_oitc(df0, df_TL, df_oitc):
@@ -370,3 +337,43 @@ print(unique_pairs)
 
 # # Keep existing values from original DataFrame
 # df_TL[cols_to_interpolate] = df_interpolated.T.where(df_TL[cols_to_interpolate].isna(), df_TL[cols_to_interpolate])
+
+
+# Method to calculate OITC
+# for row, index in df0.iterrows():
+#     A_win = df0.loc[row, 'A_win']
+#     A_wal = df0.loc[row, 'A_wal']
+#     A_tot = df0.loc[row, 'A_tot']
+#     win = df0.loc[row, 'in.windows']
+#     wall_in = df0.loc[row, 'in.insulation_wall']
+#     wall_out = df0.loc[row, 'in.geometry_wall_exterior']
+
+# match the value in wall_in, wall_out to a row in df_TL using df_TL["Basic_Category"] for wall_in and df_TL["Secondary_Category"] for wall_out, which gives us our  wall F values for
+# that resstock row. return series of f values named TL_wall
+
+# match the value in win to a row in df_TL["Basic_Category"] , which gives us our  window F values for that resstock row. return series of f values named TL_win
+
+# TL_ass = 10 * np.log10((A_win * 10 ** (-TL_win / 10) + A_wal * 10**(-TL_wal / 10)) / A_tot) # this is a series, equation computed for each value in TL_win/TL_wall series, inxed position across two series is the same
+# if possible, replace rss with NTNM data by county match with spectral curve from traffic_spectrum.xlsx
+# indoor_noise_curve = df_oitc["sum_bcf_rss"] - TL_ass
+
+# indoor_level = 10 * np.log10(sum(10**((indoor_noise_curve))))
+# outdoor_level = 10 * np.log10(sum(10**((df_oitc["sum_bcf_rss"]))))
+
+# df0["oitc"] = outdoor_level - indoor level
+
+
+# corresponding frequencies and values
+#known_freqs = np.array([freqs[col] for col in available_cols])  # maybe change to log scale
+#known_values = row[available_cols].astype(float).values
+
+#new method just based on 125 and 250:
+#known_freqs = [np.log10(freqs["f125"]), np.log10(freqs["f250"])]
+#known_values = [row["f125"], row["f250"]]
+
+# Interpolate in linear space
+#for col in cols_interp:
+#    if pd.isna(row[col]):  # Only fill missing values
+#        interp_freq = np.log10(freqs[col]) #added to convert interpolation to log
+#        interp_value = np.interp(interp_freq, known_freqs, known_values) #interp_freq used to be freqs[col]
+#        df_TL.at[idx, col] = interp_value
