@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt # popular plotting library
 import seaborn as sns # wrapper for matplotlib to make plotting much easier
 import pyarrow as pa #use if needed: pip install pyarrow
 import fastparquet as fp 
+from pyarrow.parquet import ParquetFile 
 import math
 from sklearn import linear_model # scikit-learn is a very useful machine learning library with many models built in
 from unidecode import unidecode
@@ -37,7 +38,13 @@ path = fr"C:\Users\{username}\PNNL\NEB Decarb - General\Datasets\ResStock\2024.1
 
 file = r"baseline_metadata_and_annual_results.parquet" # if you set your current folder to the directory where the file is located (in the top right of Spyder) then all you need is the file name
 filepath = os.path.join(path, file) # add the file to the folder path
-df0 = pd.read_parquet(filepath) # read the file at the specified filepath into a pandas dataframeb
+#df0 = pd.read_parquet(filepath) # read the file at the specified filepath into a pandas dataframeb
+
+pf = ParquetFile(filepath) 
+first_ten_rows = next(pf.iter_batches(batch_size = 1000)) 
+df0 = pa.Table.from_batches([first_ten_rows]).to_pandas() 
+
+
 
 #assign window to wall ratio numerically, extracting from parameter in ResStock
 df0['A_win.pre'] = df0['in.window_areas']
@@ -131,14 +138,14 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     
     if secondary_category:
         filtered_df = df[
-            df["ResStock_match"].str.contains(basic_category, na=False) #&     #Temporarily removing second category match until I can make the dataset more robust
-            #df["ResStock_match_out"].str.contains(secondary_category, na=False)
+            df["ResStock_match"].str.contains(basic_category, na=False) &     #Temporarily removing second category match until I can make the dataset more robust
+            df["ResStock_match_out"].str.contains(secondary_category, na=False)
         ]
     else:
-        filtered_df = df[df["ResStock_match"].str.contains(basic_category, na=False)] ###PROBLEM - with and without storm doors will match regardless since with storm windows is identical but with added text
+        filtered_df = df[df["ResStock_match"].str.contains(basic_category, na=False)] ###PROBLEM - with and without storm window will match regardless since with storm windows is identical but with added text
     
     if not filtered_df.empty:
-        random_row = filtered_df.sample(n=1)
+        random_row = filtered_df.sample(n=1) #potential to sample with weighting incorporated
         f_columns = [col for col in random_row.columns if col.startswith("f") and 80 <= int(col[1:]) <= 4000] #added indices for beginning and ending columns of interest
         return random_row[f_columns].squeeze()
     else:
@@ -180,17 +187,14 @@ def calculate_oitc(df0, df_TL, df_oitc):
     f_columns = ['f80', 'f100', 'f125', 'f160', 'f200', 'f250', 'f315', 'f400', 'f500', 'f630', 'f800', 'f1000', 'f1250', 'f1600', 'f2000', 'f2500', 'f3150', 'f4000'] #theres a better way to do this I'm sure
     sum_bcf_rss.index = f_columns
 
-<<<<<<< HEAD
-    for _, row in df0.iterrows():
-=======
+
+    #for _, row in df0.iterrows():
 
     # list TL columns in df_TL to be used later (do we still need this step or is it redundant now based on line 114?) commenting out for now
     #f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
 
     for idx, (_,row) in enumerate(df0.iterrows()):
         print(f"Iteration {idx + 1}")
-        
->>>>>>> ae86e9453073c6bdb9ca521d00d358d7aad82bc0
         A_win = row['A_win']
         A_wal = row['A_wal']
         A_tot = row['A_tot']
