@@ -73,24 +73,52 @@ freqs = {
 }
 
 # column groups
-cols_interp = ["f50", "f63", "f80"]  # columns to interpolate
-cols_known = ["f100", "f125", "f160", "f200", "f250", "f315"]  # reference columns
+#cols_interp = ["f50", "f63", "f80"]  # columns to interpolate
+#cols_known = ["f100", "f125", "f160", "f200", "f250", "f315"]  # reference columns
+cols_interp = ["f50", "f63", "f80", "f100"]  # columns to interpolate
+cols_known = ["f125", "f250"]  # reference columns
 
 for idx, row in df_TL.iterrows():
-    available_cols = [col for col in cols_known if not pd.isna(row[col])]
+    #available_cols = [col for col in cols_known if not pd.isna(row[col])]
 
-    if len(available_cols) < 2:  # Need at least two points for interpolation
+    #if len(available_cols) < 2:  # Need at least two points for interpolation
+    if pd.isna(row["f125"]) or pd.isna(row["f250"]):
         continue
 
     # corresponding frequencies and values
-    known_freqs = np.array([freqs[col] for col in available_cols])  # maybe change to log scale
-    known_values = row[available_cols].astype(float).values
+    #known_freqs = np.array([freqs[col] for col in available_cols])  # maybe change to log scale
+    #known_values = row[available_cols].astype(float).values
+    
+    #new method just based on 125 and 250:
+    #known_freqs = [np.log10(freqs["f125"]), np.log10(freqs["f250"])]
+    #known_values = [row["f125"], row["f250"]]
 
     # Interpolate in linear space
+    #for col in cols_interp:
+    #    if pd.isna(row[col]):  # Only fill missing values
+    #        interp_freq = np.log10(freqs[col]) #added to convert interpolation to log
+    #        interp_value = np.interp(interp_freq, known_freqs, known_values) #interp_freq used to be freqs[col]
+    #        df_TL.at[idx, col] = interp_value
+
+    #redid to just use 125 adn 250 center band frequencies for simplicity
+    # Values at 125 and 250 Hz
+    val_125 = row["f125"]
+    val_250 = row["f250"]
+
+    # Log frequencies
+    log_freq_125 = np.log10(freqs["f125"])
+    log_freq_250 = np.log10(freqs["f250"])
+
+    # Calculate the slope in log space
+    slope = (val_250 - val_125) / (log_freq_250 - log_freq_125)
+
+    # Interpolate missing values using calculated slope
     for col in cols_interp:
         if pd.isna(row[col]):  # Only fill missing values
-            interp_value = np.interp(freqs[col], known_freqs, known_values)
+            log_freq = np.log10(freqs[col])
+            interp_value = val_125 + slope * (log_freq - log_freq_125)
             df_TL.at[idx, col] = interp_value
+
 
 
 print("break")
@@ -103,7 +131,7 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     
     if secondary_category:
         filtered_df = df[
-            df["ResStock_match"].str.contains(basic_category, na=False) & 
+            df["ResStock_match"].str.contains(basic_category, na=False) &   ###PROBLEM - with and without storm doors will match regardless since with storm windows is identical but with added text
             df["ResStock_match_out"].str.contains(secondary_category, na=False)
         ]
     else:
@@ -156,7 +184,9 @@ def calculate_oitc(df0, df_TL, df_oitc):
     # list TL columns in df_TL to be used later (do we still need this step or is it redundant now based on line 114?) commenting out for now
     #f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
 
-    for _, row in df0.iterrows():
+    for idx, (_,row) in enumerate(df0.iterrows()):
+        print(f"Iteration {idx + 1}")
+        
         A_win = row['A_win']
         A_wal = row['A_wal']
         A_tot = row['A_tot']
@@ -178,18 +208,29 @@ def calculate_oitc(df0, df_TL, df_oitc):
         # @ Kieren: here is the point where we want to check to make sure that TL_wall and TL_win are the same shape
         # as sum_bcf_rss.
 
+
+        #if None in [A_win, TL_win, A_wal, TL_wall, A_tot]:
+        #    oitc_list.append(np.nan)
+        #    continue
+        
         # area-weighted TL across all frequency bands
-        TL_ass = 10 * np.log10((A_win * 10 ** (TL_win / 10) + A_wal * 10 ** (TL_wall / 10)) / A_tot)
-
-        # @ Kieren: here we should check to ensure that TL_ass and sum_bcf_rss are the same shape
-        # indoor noise at each frequency band
-        indoor_noise_curve = sum_bcf_rss - TL_ass
-
-        # convert to linear scale, sum, then back to dB
-        indoor_level = 10 * np.log10(np.sum(10 ** (indoor_noise_curve / 10)))
-        outdoor_level = 10 * np.log10(np.sum(10 ** (sum_bcf_rss / 10)))
-
-        oitc = outdoor_level - indoor_level
+        try:
+            TL_ass = 10 * np.log10((A_win * 10 ** (TL_win / 10) + A_wal * 10 ** (TL_wall / 10)) / A_tot)
+    
+            # @ Kieren: here we should check to ensure that TL_ass and sum_bcf_rss are the same shape
+            # indoor noise at each frequency band
+            indoor_noise_curve = sum_bcf_rss - TL_ass
+    
+            # convert to linear scale, sum, then back to dB
+            indoor_level = 10 * np.log10(np.sum(10 ** (indoor_noise_curve / 10)))
+            outdoor_level = 10 * np.log10(np.sum(10 ** (sum_bcf_rss / 10)))
+    
+            oitc = outdoor_level - indoor_level
+        except Exception as e:
+            oitc = np.nan  # Ensure any calculation errors append NaN
+            print(f"Exception on iteration {idx + 1}: {e}") #print errors for debugging
+            
+            
         oitc_list.append(oitc)
 
     # Add OITC column to the input df0
