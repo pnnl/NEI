@@ -41,7 +41,7 @@ filepath = os.path.join(path, file) # add the file to the folder path
 #df0 = pd.read_parquet(filepath) # read the file at the specified filepath into a pandas dataframeb
 
 pf = ParquetFile(filepath) 
-first_ten_rows = next(pf.iter_batches(batch_size = 1000)) 
+first_ten_rows = next(pf.iter_batches(batch_size = 10000)) 
 df0 = pa.Table.from_batches([first_ten_rows]).to_pandas() 
 
 
@@ -116,13 +116,13 @@ for idx, row in df_TL.iterrows():
 print("break")
 
 def match_in_list(column, value):
-        return column.str.contains(f'(?<=^|;){value}(?=;|$)', na=False)
+        return column.apply(lambda x: value in x.split(";") if isinstance(x,str) else False) #for each one, split on a delimiter
     
     
 ##function for getting the TL rows that we will use for each entry in ResStock
 def get_matching_TL(df, basic_category, secondary_category=None):
     """Fetch a random row based on the Basic_Category and optional Secondary_Category,
-       returning the 'f' columns as a Series if a match is found, otherwise None."""
+        returning the 'f' columns as a Series if a match is found, otherwise None."""
     
     if secondary_category:
         filtered_df = df[
@@ -139,6 +139,28 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     else:
         return None
 
+
+
+
+# =============================================================================
+# def get_matching_TL(df, basic_category, secondary_category=None):
+#     """Fetch a random row based on the Basic_Category and optional Secondary_Category,
+#         returning the 'f' columns as a Series if a match is found, otherwise None."""
+#     
+#     if secondary_category:
+#         filtered_df = df[
+#             match_in_list(df["ResStock_match"], basic_category) &
+#             match_in_list(df["ResStock_match_out"], secondary_category)
+#         ]
+#     else:
+#         filtered_df = df[match_in_list(df["ResStock_match"], basic_category)]
+#     if not filtered_df.empty:
+#         random_row = filtered_df.sample(n=1) #potential to sample with weighting incorporated
+#         f_columns = [col for col in random_row.columns if col.startswith("f") and 80 <= int(col[1:]) <= 4000] #added indices for beginning and ending columns of interest
+#         return random_row[f_columns].squeeze()
+#     else:
+#         return None
+# =============================================================================
 
 
 # calculate OITC attempt 1
@@ -225,7 +247,16 @@ print(unique_pairs)
 
 
 
+# Create the histogram of oitc
+df0['oitc'].dropna().plot(kind='hist', bins=30, edgecolor='black', figsize=(10, 6))
 
+# Adding titles and labels
+plt.title('Histogram of OITC')
+plt.xlabel('OITC')
+plt.ylabel('Frequency')
+
+# Show the plot
+plt.show()
 
 
 
