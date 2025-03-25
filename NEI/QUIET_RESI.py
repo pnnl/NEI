@@ -147,7 +147,7 @@ def calculate_oitc(df0, df_TL, df_oitc):
     # constant for now, change with county later
     # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use 
     #note from Kieren: use all between 80 and 4000, so the object should be 18 values (numerical)
-    sum_bcf_rss = df_oitc["sum_bcf_rss"]
+    sum_bcf_rss = df_oitc["sum_bcf_rss"] # we need this to have named indices f80 thorugh f4000
 
     # list TL columns in df_TL to be used later (do we still need this step or is it redundant now based on line 114?) commenting out for now
     #f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
@@ -175,7 +175,7 @@ def calculate_oitc(df0, df_TL, df_oitc):
         # as sum_bcf_rss.
 
         # area-weighted TL across all frequency bands
-        TL_ass = 10 * np.log10((A_win * 10 ** (-TL_win / 10) + A_wal * 10 ** (-TL_wall / 10)) / A_tot)
+        TL_ass = 10 * np.log10((A_win * 10 ** (TL_win / 10) + A_wal * 10 ** (TL_wall / 10)) / A_tot)
 
         # @ Kieren: here we should check to ensure that TL_ass and sum_bcf_rss are the same shape
         # indoor noise at each frequency band
