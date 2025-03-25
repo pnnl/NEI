@@ -137,9 +137,6 @@ def calculate_oitc(df0, df_TL, df_oitc):
     # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use
     sum_bcf_rss = df_oitc["sum_bcf_rss"]
 
-    # list TL columns in df_TL to be used later
-    f_columns = [col for col in df_TL.columns if col.startswith("f")]
-
     for _, row in df0.iterrows():
         A_win = row['A_win']
         A_wal = row['A_wal']
