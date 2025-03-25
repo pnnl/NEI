@@ -242,7 +242,9 @@ df_out = calculate_oitc(df0=df0,df_TL=df_TL, df_oitc=df_oitc)
 print("done")
 
 
-
+#use this to troubleshoot TL database to try to get more matches
+unique_pairs = df0[['in.insulation_wall', 'in.geometry_wall_exterior_finish']].drop_duplicates()
+print(unique_pairs)
 
 
 
