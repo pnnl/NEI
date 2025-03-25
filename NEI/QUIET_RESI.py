@@ -131,11 +131,11 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     
     if secondary_category:
         filtered_df = df[
-            df["ResStock_match"].str.contains(basic_category, na=False) &   ###PROBLEM - with and without storm doors will match regardless since with storm windows is identical but with added text
-            df["ResStock_match_out"].str.contains(secondary_category, na=False)
+            df["ResStock_match"].str.contains(basic_category, na=False) #&     #Temporarily removing second category match until I can make the dataset more robust
+            #df["ResStock_match_out"].str.contains(secondary_category, na=False)
         ]
     else:
-        filtered_df = df[df["ResStock_match"].str.contains(basic_category, na=False)]
+        filtered_df = df[df["ResStock_match"].str.contains(basic_category, na=False)] ###PROBLEM - with and without storm doors will match regardless since with storm windows is identical but with added text
     
     if not filtered_df.empty:
         random_row = filtered_df.sample(n=1)
