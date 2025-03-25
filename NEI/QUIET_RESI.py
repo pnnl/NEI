@@ -111,7 +111,7 @@ def get_matching_TL(df, basic_category, secondary_category=None):
     
     if not filtered_df.empty:
         random_row = filtered_df.sample(n=1)
-        f_columns = [col for col in random_row.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns of interest
+        f_columns = [col for col in random_row.columns if col.startswith("f") and 80 <= int(col[1:]) <= 4000] #added indices for beginning and ending columns of interest
         return random_row[f_columns].squeeze()
     else:
         return None
