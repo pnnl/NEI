@@ -148,6 +148,10 @@ def calculate_oitc(df0, df_TL, df_oitc):
     # @ Kieren: this series should be an expected shape, dependent on the final decision for which of the frequency bands/cols we want to use 
     #note from Kieren: use all between 80 and 4000, so the object should be 18 values (numerical)
     sum_bcf_rss = df_oitc["sum_bcf_rss"] # we need this to have named indices f80 thorugh f4000
+    
+    f_columns = ['f80', 'f100', 'f125', 'f160', 'f200', 'f250', 'f315', 'f400', 'f500', 'f630', 'f800', 'f1000', 'f1250', 'f1600', 'f2000', 'f2500', 'f3150', 'f4000'] #theres a better way to do this I'm sure
+    sum_bcf_rss.index = f_columns
+
 
     # list TL columns in df_TL to be used later (do we still need this step or is it redundant now based on line 114?) commenting out for now
     #f_columns = [col for col in df_TL.columns if col.startswith("f") and "80" <= col[1:] <= "4000"] #added indices for beginning and ending columns 
