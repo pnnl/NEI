@@ -260,6 +260,43 @@ plt.show()
 
 
 
+
+# Plot the building vintage
+# Create a table of the counts of each value in 'in.vintage'
+vintage_counts = df0['in.vintage'].value_counts()
+
+# Convert the counts to a dataframe
+vintage_counts_df = vintage_counts.reset_index()
+vintage_counts_df.columns = ['in.vintage', 'count']
+
+# Calculate the total counts for percentage calculation
+total_counts = vintage_counts_df['count'].sum()
+
+# Calculate the percentage for each value
+vintage_counts_df['percentage'] = (vintage_counts_df['count'] / total_counts) * 100
+
+# Define the correct chronological order
+chronological_order = ['<1940', '1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s']
+
+# Set the categorical type with the correct order
+vintage_counts_df['in.vintage'] = pd.Categorical(vintage_counts_df['in.vintage'], categories=chronological_order, ordered=True)
+
+# Sort the dataframe by 'in.vintage'
+vintage_counts_df = vintage_counts_df.sort_values('in.vintage')
+
+# Print the sorted dataframe
+print(vintage_counts_df)
+
+# Plot the percentages as a bar graph
+plt.figure(figsize=(10, 6))
+plt.bar(vintage_counts_df['in.vintage'], vintage_counts_df['percentage'])
+plt.title('Percentage of Each Value in in.vintage')
+plt.xlabel('in.vintage')
+plt.ylabel('Percentage')
+plt.xticks(rotation=45)
+plt.show()
+
+
 ######################################
 
 
