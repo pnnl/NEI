@@ -23,6 +23,7 @@ import math
 from sklearn import linear_model # scikit-learn is a very useful machine learning library with many models built in
 from unidecode import unidecode
 import random
+from matplotlib.ticker import PercentFormatter
 #import torch # pytorch and tensorflow are both very powerful deep learning libraries for more advanced machine learning models
 #import tensorflow as tf # they currently do not work with the latest Python version however
 
@@ -41,9 +42,14 @@ filepath = os.path.join(path, file) # add the file to the folder path
 #df0 = pd.read_parquet(filepath) # read the file at the specified filepath into a pandas dataframeb
 
 pf = ParquetFile(filepath) 
-first_ten_rows = next(pf.iter_batches(batch_size = 10000)) 
-df0 = pa.Table.from_batches([first_ten_rows]).to_pandas() 
+first_n_rows = next(pf.iter_batches(batch_size = 100000)) 
+df0 = pa.Table.from_batches([first_n_rows]).to_pandas() 
 
+#filter to only include buildings with 4 units or fewer
+building_types_of_interest = ["2 Unit", "3 or 4 Unit", "Single-Family Attached", "Single-Family Detached"]
+
+# Filter the DataFrame
+df0 = df0[df0['in.geometry_building_type_acs'].isin(building_types_of_interest)]
 
 
 #assign window to wall ratio numerically, extracting from parameter in ResStock
@@ -163,7 +169,7 @@ def get_matching_TL(df, basic_category, secondary_category=None):
 # =============================================================================
 
 
-# calculate OITC attempt 1
+# calculate OITC 
 def calculate_oitc(df0, df_TL, df_oitc):
     # OITC results list
     oitc_list = []
@@ -289,10 +295,11 @@ print(vintage_counts_df)
 
 # Plot the percentages as a bar graph
 plt.figure(figsize=(10, 6))
-plt.bar(vintage_counts_df['in.vintage'], vintage_counts_df['percentage'])
-plt.title('Percentage of Each Value in in.vintage')
+plt.bar(vintage_counts_df['in.vintage'], vintage_counts_df['percentage'], color='#56B4E9')
+plt.title('Building Vintage Distribution in ResStock')
 plt.xlabel('in.vintage')
-plt.ylabel('Percentage')
+plt.ylabel('Percentage of ResStock Entries')
+plt.gca().yaxis.set_major_formatter(PercentFormatter(decimals = 0))
 plt.xticks(rotation=45)
 plt.show()
 
