@@ -265,8 +265,6 @@ plt.ylabel('Frequency')
 plt.show()
 
 
-
-
 # Plot the building vintage
 # Create a table of the counts of each value in 'in.vintage'
 vintage_counts = df0['in.vintage'].value_counts()
@@ -281,7 +279,7 @@ total_counts = vintage_counts_df['count'].sum()
 # Calculate the percentage for each value
 vintage_counts_df['percentage'] = (vintage_counts_df['count'] / total_counts) * 100
 
-# Define the correct chronological order
+# Define the correct chronological order 
 chronological_order = ['<1940', '1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s']
 
 # Set the categorical type with the correct order
@@ -302,6 +300,62 @@ plt.ylabel('Percentage of ResStock Entries')
 plt.gca().yaxis.set_major_formatter(PercentFormatter(decimals = 0))
 plt.xticks(rotation=45)
 plt.show()
+
+
+
+
+
+#side by side histograms for pre and post 2000
+# Define the chronological order
+chronological_order = ['<1940', '1940s', '1950s', '1960s', '1970s', '1980s', '1990s', '2000s', '2010s']
+
+# Filter the DataFrames
+pre_2000 = df0[df0['in.vintage'].isin(['<1940', '1940s', '1950s', '1960s', '1970s', '1980s', '1990s'])]
+post_2000 = df0[df0['in.vintage'].isin(['2000s', '2010s'])]
+
+# Create subplots
+fig, axs = plt.subplots(1, 2, figsize=(15, 6), sharey=True)
+
+# Pre 2000 histogram
+axs[0].hist(pre_2000['oitc'].dropna(), bins=30, edgecolor='black', density=True)
+axs[0].set_title('Histogram of OITC for Buildings Built Pre 2000')
+axs[0].set_xlabel('OITC')
+axs[0].set_ylabel('Percentage')
+axs[0].yaxis.set_major_formatter(PercentFormatter(xmax=1))
+
+# Post 2000 histogram
+axs[1].hist(post_2000['oitc'].dropna(), bins=30, edgecolor='black', density=True)
+axs[1].set_title('Histogram of OITC for Buildings Built Post 2000')
+axs[1].set_xlabel('OITC')
+axs[1].yaxis.set_major_formatter(PercentFormatter(xmax=1))
+
+# Show the plot
+plt.show()
+
+
+
+## make tables of the wall type by vintage
+# Group by insulation_wall for both pre 2000 and post 2000 and count
+pre_2000_table = pre_2000.groupby('in.insulation_wall').size().reset_index(name='count_pre_2000')
+post_2000_table = post_2000.groupby('in.insulation_wall').size().reset_index(name='count_post_2000')
+
+# Calculate the total counts in each group
+total_pre_2000 = pre_2000_table['count_pre_2000'].sum()
+total_post_2000 = post_2000_table['count_post_2000'].sum()
+
+# Calculate the percentages
+pre_2000_table['percent_pre_2000'] = (pre_2000_table['count_pre_2000'] / total_pre_2000) * 100
+post_2000_table['percent_post_2000'] = (post_2000_table['count_post_2000'] / total_post_2000) * 100
+
+# Merge the tables on in.insulation_wall to have them side by side
+merged_table = pd.merge(pre_2000_table[['in.insulation_wall', 'percent_pre_2000']], 
+                        post_2000_table[['in.insulation_wall', 'percent_post_2000']], 
+                        on='in.insulation_wall', 
+                        how='outer').fillna(0)
+
+# Display the resulting table
+print(merged_table)
+
 
 
 ######################################
