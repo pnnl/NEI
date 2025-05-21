@@ -3,7 +3,6 @@
 
 # if you don't have dplyr, purr, or rstudioapi installed
 ## uncomment lines 6-8
-## use the following commands in the console as appropriate
 ## install.packages("dplyr")
 ## install.packages("purrr")
 ## install.packages("rstudioapi")
@@ -49,9 +48,9 @@ df <- list(home_demographics,
 
 
 
-#create UPGRADE_E dataset 
-#comment out lines 57-58
-#if you do not want to write 
+# create UPGRADE_E dataset 
+# comment out lines 56-57
+# if you do not want to write 
 # df to your computer as a .csv)
 
 write.csv(df, "UPGRADE-E.csv",
